@@ -1,0 +1,88 @@
+import { auth } from "@/auth";
+import { db } from "@/lib/db";
+import { NextRequest, NextResponse } from "next/server";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+import { VehicleRequest } from "@prisma/client";
+dayjs.extend(timezone);
+dayjs.extend(utc);
+export async function GET(request: NextRequest) {
+  // Get the authenticated user session
+  const session = await auth();
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const userRequest = await db.vehicleRequest.findMany({
+    where: {
+      userId: session.user.id,
+    },
+    include: {
+      vehicle: {
+        select: {
+          id: true,
+          name: true,
+          plate: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  const approvedRequests = userRequest.filter(
+    (request) => request.status === "APPROVED"
+  );
+
+  const unCheckOutVehicle = await db.vehicleRequest.findMany({
+    where: {
+      userId: {
+        not: session.user.id,
+      },
+      status: "APPROVED",
+      checkOutAt: null,
+      vehicleId: {
+        in: approvedRequests.map((request) => request.vehicleId),
+      },
+    },
+  });
+
+  const mapVehicleId = unCheckOutVehicle.map((vehicle) => vehicle.vehicleId); 
+
+  const userRequestResponse = userRequest.map((request) => {
+  
+    return {
+      ...request,
+      buttonStatus: getButtonStatus(request),
+      isIdle: !mapVehicleId.includes(request.vehicleId),
+    };
+  });
+
+  return NextResponse.json(userRequestResponse);
+}
+
+const getButtonStatus = (request:VehicleRequest & {vehicle: {plate: string}}) => {
+  const now = dayjs();
+  
+  if (request.status === "APPROVED") {
+    if (request.checkOutAt === null) {      
+      // check if same day 
+     if(dayjs(now).isSame(dayjs(request.endDateTime), 'day')) {
+      // check if current hour is before startDateTime
+      if(dayjs(now).isBefore(dayjs(request.startDateTime))) {
+        return null;
+      }
+      // check if current hour is after request hour
+      if(dayjs(now).isAfter(dayjs(request.endDateTime))) {
+        return "overTime";
+      } 
+      return "ontime";
+     } else {
+      return "warning";
+     }
+    }
+  }
+  return null;
+};
