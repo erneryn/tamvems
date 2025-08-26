@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import {
   Card,
   Table,
@@ -40,7 +40,7 @@ const statusLabels = {
   OVERDUE: { label: "Belum Kembali", color: "failure" },
 } as const;
 
-export default function AdminRequests() {
+function AdminRequestsContent() {
   const searchParams = useSearchParams();
 
   const [requests, setRequests] = useState<RequestData[]>([]);
@@ -457,5 +457,13 @@ export default function AdminRequests() {
         />
       )}
     </div>
+  );
+}
+
+export default function AdminRequests() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center p-8"><div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>}>
+      <AdminRequestsContent />
+    </Suspense>
   );
 }

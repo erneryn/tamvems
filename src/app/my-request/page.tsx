@@ -24,7 +24,6 @@ export default function PengajuanSaya() {
   const fetchUserRequest = async () => {
     const response = await fetch("/api/user-request");
     const data = await response.json();
-    console.log(data);
     setUserRequest(data);
   };
 

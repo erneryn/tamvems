@@ -9,7 +9,7 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { Vehicle } from "@prisma/client";
 import Loading from "@/components/Loading";
 import { useSession } from "next-auth/react";
@@ -17,7 +17,7 @@ import { Toast } from "flowbite-react";
 import { HiCheck } from "react-icons/hi";
 import dayjs from "dayjs";
 
-export default function Pengajuan() {
+function PengajuanContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const vehicleId = searchParams.get("vehicleId");
@@ -284,5 +284,13 @@ export default function Pengajuan() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Pengajuan() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <PengajuanContent />
+    </Suspense>
   );
 }

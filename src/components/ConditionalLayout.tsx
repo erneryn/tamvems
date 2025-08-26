@@ -12,7 +12,6 @@ export default function ConditionalLayout({ children }: ConditionalLayoutProps) 
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith('/admin');
   const isUserRoute = ['/dashboard', '/my-request', '/request-form'].includes(pathname || '');
-  console.log("isUserRoute", isUserRoute)
   if (isAdminRoute) {
     // For admin routes, only render children without header/footer
     return <>{children}</>;

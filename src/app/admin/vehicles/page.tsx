@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import {
   Button,
   Card,
@@ -45,7 +45,7 @@ const typeLabels = {
   ELECTRIC: { label: "Listrik", color: "success" },
 } as const;
 
-export default function AdminVehicles() {
+function AdminVehiclesContent() {
 
   const searchParams = useSearchParams();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -241,5 +241,13 @@ export default function AdminVehicles() {
         )}
       </Card>
     </div>
+  );
+}
+
+export default function AdminVehicles() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center p-8"><div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>}>
+      <AdminVehiclesContent />
+    </Suspense>
   );
 }
