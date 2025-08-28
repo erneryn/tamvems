@@ -8,20 +8,21 @@ generator client {
 datasource db {
   provider     = "mysql"
   url          = env("DATABASE_URL")
-  relationMode = "prisma"
 }
 
 model User {
-  id          String   @id @default(cuid())
-  email       String   @unique
-  name        String
-  employeeId  String   @unique @map("employee_id")
-  phone       String?
-  password    String
-  role        UserRole @default(USER)
-  isActive    Boolean  @default(true) @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id                    String   @id @default(cuid())
+  email                 String   @unique
+  name                  String
+  employeeId            String   @unique @map("employee_id")
+  phone                 String?
+  password              String
+  role                  UserRole @default(USER)
+  isActive              Boolean  @default(true) @map("is_active")
+  division              Division?
+  enablePasswordChanges Boolean  @default(false) @map("enable_password_changes")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
 
   // Relations
   vehicleRequests VehicleRequest[]
@@ -91,3 +92,17 @@ enum RequestStatus {
   COMPLETED
   CANCELLED
 } 
+
+enum Division {
+  A
+  B
+  C
+  D
+  E
+  F
+  G
+  H
+  I
+  J
+  K
+}

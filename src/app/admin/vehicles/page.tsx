@@ -24,6 +24,7 @@ import {
   HiSearch,
   HiCheckCircle,
   HiXCircle,
+  HiPencil,
 } from "react-icons/hi";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -54,8 +55,9 @@ function AdminVehiclesContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  // Show success message if redirected from registration
-  const showSuccess = searchParams.get("success") === "registered";
+  // Show success message if redirected from registration or deletion
+  const successType = searchParams.get("success");
+  const showSuccess = successType === "registered" || successType === "deleted";
 
   // Fetch vehicles data
   useEffect(() => {
@@ -99,7 +101,11 @@ function AdminVehiclesContent() {
       {showSuccess && (
         <div className="flex items-center p-4 bg-green-50 border border-green-200 rounded-lg">
           <HiCheckCircle className="h-5 w-5 text-green-500 mr-3" />
-          <p className="text-green-700">Kendaraan berhasil didaftarkan!</p>
+          <p className="text-green-700">
+            {successType === "registered" 
+              ? "Kendaraan berhasil didaftarkan!" 
+              : "Kendaraan berhasil dihapus!"}
+          </p>
         </div>
       )}
 
@@ -177,13 +183,16 @@ function AdminVehiclesContent() {
                   <TableHeadCell scope="col" className="px-6 py-3">
                     Status
                   </TableHeadCell>
+                  <TableHeadCell scope="col" className="px-6 py-3">
+                    Aksi
+                  </TableHeadCell>
                 </TableRow>
               </TableHead>
               <TableBody className="divide-y">
                 {filteredVehicles.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={7}
+                      colSpan={8}
                       className="text-center py-10 text-gray-500"
                     >
                       {searchTerm
@@ -231,6 +240,17 @@ function AdminVehiclesContent() {
                         <Badge color={vehicle.isActive ? "success" : "gray"} className="flex items-center justify-center">
                           {vehicle.isActive ? "Aktif" : "Nonaktif"}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          size="sm"
+                          color="blue"
+                          href={`/admin/vehicles/${vehicle.id}`}
+                          className="flex items-center justify-center"
+                        >
+                          <HiPencil className="h-4 w-4 mr-1" />
+                          Edit
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))

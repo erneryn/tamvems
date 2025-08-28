@@ -2,7 +2,7 @@
 
 import { Card, Button } from "flowbite-react";
 import { Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
-import { HiUserCircle, HiClock, HiCalendar, HiExclamationCircle } from "react-icons/hi";
+import { HiUserCircle, HiClock, HiCalendar, HiExclamationCircle, HiUsers, HiCheckCircle, HiMail } from "react-icons/hi";
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { VehicleRequest, User , Vehicle} from "@prisma/client";
@@ -16,6 +16,23 @@ interface RequestData extends VehicleRequest {
   vehicle: Vehicle;
 }
 
+interface UserData {
+  id: string;
+  email: string;
+  name: string;
+  employeeId: string;
+  phone: string | null;
+  role: "USER" | "ADMIN" | "SUPER_ADMIN";
+  isActive: boolean;
+  enablePasswordChanges: boolean;
+  createdAt: string;
+  updatedAt: string;
+  _count: {
+    vehicleRequests: number;
+    createdRequests: number;
+  };
+}
+
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -26,6 +43,7 @@ export default function AdminDashboard() {
   const [latestRequests, setLatestRequests] = useState<RequestData[]>([]);
   const [todayActivity, setTodayActivity] = useState<RequestData[]>([]);
   const [overdueRequests, setOverdueRequests] = useState<RequestData[]>([]);
+  const [users, setUsers] = useState<UserData[]>([]);
   const hasInitialized = useRef(false);
   const [isLoading, setIsLoading] = useState(false);
   const updateDateTime = () => {
@@ -77,6 +95,16 @@ export default function AdminDashboard() {
     }
   };
 
+  const getUsers = async () => {
+    try {
+      const response = await fetch('/api/users');
+      const data = await response.json();
+      setUsers(data.users);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
   useEffect(() => {
     // Update immediately
     updateDateTime();
@@ -94,6 +122,7 @@ export default function AdminDashboard() {
     getLatestRequests();
     getTodayActivity();
     getOverdueRequests();
+    getUsers();
   }, []);
 
   const handleActionClick = (request: RequestData) => {
@@ -116,6 +145,7 @@ export default function AdminDashboard() {
       setIsLoading(false);
       getLatestRequests();
       getTodayActivity();
+      getUsers();
     }
    
   };
@@ -135,6 +165,7 @@ export default function AdminDashboard() {
       setSelectedRequest(null);
       getLatestRequests();
       getTodayActivity();
+      getUsers();
     }
   };
 
@@ -165,6 +196,59 @@ export default function AdminDashboard() {
           </div>
         </div>
       </Card>
+
+      {/* User Statistics Cards */}
+      {users.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card>
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <HiUsers className="h-8 w-8 text-blue-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">
+                  Total Pengguna Aktif
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {users.filter(user => user.isActive).length}
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          <Card>
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <HiCheckCircle className="h-8 w-8 text-green-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">
+                  Total Permintaan
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {users.reduce((total, user) => total + user._count.vehicleRequests, 0)}
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          {/* <Card>
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <HiMail className="h-8 w-8 text-purple-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">
+                  Dengan Nomor Telepon
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {users.filter(user => user.phone).length}
+                </p>
+              </div>
+            </div>
+          </Card> */}
+        </div>
+      )}
 
     {overdueRequests.length > 0 && (
       <Card className="w-full border-l-4 border-orange-500 bg-orange-50">

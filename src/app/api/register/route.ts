@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     const validatedData = registerSchema.parse(body)
     
     const { name, email, employeeId, phone, password } = validatedData
-    
+    const division = body.division
     // Check if user already exists by email
     const existingUserByEmail = await db.user.findUnique({
       where: { email }
@@ -112,6 +112,7 @@ export async function POST(request: NextRequest) {
         password: hashedPassword,
         role: 'USER', // Default role
         isActive: true, // Default active status
+        division: division || null,
       },
       select: {
         id: true,

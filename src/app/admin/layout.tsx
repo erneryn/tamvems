@@ -7,6 +7,7 @@ import { useSession, signOut } from "next-auth/react";
 import { 
   HiHome, 
   HiUserAdd, 
+  HiUsers,
   HiClipboardList, 
   HiTruck, 
   HiChartBar, 
@@ -29,7 +30,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { href: "/admin/dashboard", label: "Dashboard", icon: HiHome },
-  { href: "/admin/register", label: "Daftar Pengguna", icon: HiUserAdd },
+  { href: "/admin/users", label: "Kelola Pengguna", icon: HiUsers },
   { href: "/admin/requests", label: "Kelola Pengajuan", icon: HiClipboardList },
   { href: "/admin/vehicles", label: "Kelola Kendaraan", icon: HiTruck },
   { href: "/admin/reports", label: "Laporan", icon: HiChartBar },

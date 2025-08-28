@@ -21,9 +21,8 @@ export const registerSchema = object({
     .max(50, "Employee ID must be less than 50 characters"),
   phone: string().optional(),
   password: string({message: "Password is required"})
-    .min(1, "Password is required")
-    .min(8, "Password must be more than 8 characters")
-    .max(32, "Password must be less than 32 characters"),
+    .min(5, "Password harus lebih dari 5 karakter")
+    .max(20, "Password harus kurang dari 20 karakter"),
   confirmPassword: string({message: "Confirm password is required"})
     .min(1, "Confirm password is required"),
 }).refine((data) => data.password === data.confirmPassword, {
