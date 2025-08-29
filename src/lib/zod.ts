@@ -1,12 +1,12 @@
-import { object, string, number, enum as zodEnum } from "zod"
+import { object, string, enum as zodEnum } from "zod"
  
 export const signInSchema = object({
   email: string({message: "Email is required" })
     .min(1, "Email is required")
     .email("Invalid email"),
   password: string({message: "Password is required" })
-    .min(8, "Password must be more than 8 characters")
-    .max(32, "Password must be less than 32 characters"),
+    .min(5, "Password must be more than 5 characters")
+    .max(20, "Password must be less than 20 characters"),
 })
 
 export const registerSchema = object({
@@ -64,4 +64,20 @@ export const vehicleRegisterSchema = object({
   year: string({message: "Year is required"})
     .min(4, "Year must be at least 4 characters")
     .max(4, "Year must be 4 characters"),
+})
+
+export const profileUpdateSchema = object({
+  name: string({message: "Name is required"})
+    .min(1, "Name is required")
+    .max(100, "Name must be less than 100 characters"),
+  phone: string().optional(),
+  division: zodEnum(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"], {
+    message: "Please select a valid division"
+  }),
+})
+
+export const passwordChangeSchema = object({
+  newPassword: string({message: "New password is required"})
+    .min(5, "New password must be at least 5 characters")
+    .max(20, "New password must be less than 20 characters"),
 })

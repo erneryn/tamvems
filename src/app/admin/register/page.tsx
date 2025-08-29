@@ -89,7 +89,6 @@ export default function Register() {
       const data = await response.json();
 
       if (!response.ok) {
-        console.log(data);
         if(data.details) {
           const message = data.details.map((detail: { message: string }) => detail?.message).join(', ');
           throw new Error(message);

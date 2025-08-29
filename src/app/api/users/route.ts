@@ -17,6 +17,7 @@ export async function GET() {
         phone: true,
         role: true,
         isActive: true,
+        division: true,
         enablePasswordChanges: true,
         createdAt: true,
         updatedAt: true,

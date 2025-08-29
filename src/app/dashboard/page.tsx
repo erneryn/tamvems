@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback } from "react";
 import Card from "@/components/Card";
 import CheckOut from "@/components/CheckOut";
 import { VehicleResponse } from "@/app/api/request/route";
+import { UserVehicleStatus } from "@/app/api/user-status/route";
 import EmptyState from "@/components/EmptyState";
 import Loading from "@/components/Loading";
 import dayjs from "dayjs";
@@ -16,6 +17,7 @@ export default function Dashboard() {
   const minHour = dayjs().get("hour");
   const [isUsingVehicle, setIsUsingVehicle] = useState(false);
   const [isOverlapping, setIsOverlapping] = useState(false);
+  const [userStatus, setUserStatus] = useState<UserVehicleStatus | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [selectedStartTime, setSelectedStartTime] = useState(minHour.toString());
   const [selectedEndTime, setSelectedEndTime] = useState((minHour + 1).toString());
@@ -34,6 +36,7 @@ export default function Dashboard() {
 
   const handleSearch = () => {
     fetchVehicleRequests();
+    fetchUserStatus(); // Also refresh user status when searching
   };
 
   const fetchVehicleRequests = useCallback(async () => {
@@ -51,15 +54,67 @@ export default function Dashboard() {
     }, 500);
   }, [selectedDate, selectedStartTime, selectedEndTime]);
 
+  const fetchUserStatus = useCallback(async () => {
+    try {
+      const response = await fetch('/api/user-status');
+      if (response.ok) {
+        const data: UserVehicleStatus = await response.json();
+        setUserStatus(data);
+        setIsUsingVehicle(data.isUsingVehicle);
+        setIsOverlapping(data.isOverlapping);
+      }
+    } catch (error) {
+      console.error('Error fetching user status:', error);
+    }
+  }, []);
+
+  const handleVehicleReturnSuccess = () => {
+    // Refresh user status after successful return
+    fetchUserStatus();
+  };
+
   useEffect(() => {
     fetchVehicleRequests();
   }, [fetchVehicleRequests]);
 
+  // Fetch user status on mount and set up periodic updates
+  useEffect(() => {
+    fetchUserStatus();
+    
+    // Update user status every minute to check for time-based changes
+    const interval = setInterval(fetchUserStatus, 60000); // 60 seconds
+    
+    return () => clearInterval(interval);
+  }, [fetchUserStatus]);
+
   return (
     <div className="container mx-auto">
       <div className="flex flex-col gap-3 items-center justify-center w-full mt-10">
-        {isUsingVehicle && <CheckOut type="inrange" />}
-        {isOverlapping && <CheckOut type="outrange" />}
+        {isUsingVehicle && userStatus?.currentUsage && (
+          <CheckOut 
+            type="inrange" 
+            vehicleInfo={{
+              requestId: userStatus.currentUsage.id,
+              vehicleName: userStatus.currentUsage.vehicleName,
+              vehiclePlate: userStatus.currentUsage.vehiclePlate,
+              destination: userStatus.currentUsage.destination,
+            }}
+            onReturnSuccess={handleVehicleReturnSuccess}
+          />
+        )}
+        {isOverlapping && userStatus?.overdueUsage && (
+          <CheckOut 
+            type="outrange" 
+            vehicleInfo={{
+              requestId: userStatus.overdueUsage.id,
+              vehicleName: userStatus.overdueUsage.vehicleName,
+              vehiclePlate: userStatus.overdueUsage.vehiclePlate,
+              destination: userStatus.overdueUsage.destination,
+              minutesOverdue: userStatus.overdueUsage.minutesOverdue,
+            }}
+            onReturnSuccess={handleVehicleReturnSuccess}
+          />
+        )}
       </div>
       <div className="sm:w-3/4 w-11/12 mx-auto flex flex-col gap-6  border-2 border-gray-300 rounded-lg mt-10 items-center p-5">
         <div className="flex flex-col text-center gap-2">

@@ -160,9 +160,45 @@ export async function POST(request: NextRequest) {
     }
 
     const session = await auth();
+    
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const user = await db.user.findUnique({
+      where: {
+        id: session.user.id,
+      },
+      select: {
+        division: true,
+      },
+    })
+
+    const todayRequest = await db.vehicleRequest.findMany({
+      where: {
+        createdAt: {
+          gte: dayjs().startOf('day').toDate(),
+          lte: dayjs().endOf('day').toDate(),
+        },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            division: true,
+          },
+        },
+      },
+    })
+
+
+    const userDivisionRequest = todayRequest.filter((request) => request.user.division.toLowerCase() === user?.division?.toLowerCase())
+    if(userDivisionRequest.length >= (process.env.MAX_REQUEST_PER_DAY ? parseInt(process.env.MAX_REQUEST_PER_DAY) : 2)) {
+      return NextResponse.json({ error: "Maximum pengajuan per divisi hari ini sudah tercapai (2)", errorCode: "MAX_REQUEST_PER_DAY" }, { status: 400 });
+    }
+
+    
     const startDateTime = dayjs(`${startDate} ${startTime}:00`).toDate();
     const endDateTime = dayjs(`${endDate} ${endTime}:00`).toDate();
 

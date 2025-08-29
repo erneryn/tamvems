@@ -34,6 +34,16 @@ export async function middleware(request: NextRequest) {
     console.log('✅ User dashboard access granted for:', session.user?.email)
   }
 
+  // Protect user routes like profile, my-request, etc.
+  if (pathname === '/profile' || pathname === '/my-request' || pathname === '/request-form') {
+    if (!session) {
+      console.log('❌ No session, redirecting to login')
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+
+    console.log('✅ User route access granted for:', session.user?.email)
+  }
+
   // Check if the path starts with /admin
   if (pathname.startsWith('/admin')) {
     // Get the session
@@ -72,7 +82,9 @@ export const config = {
     '/dashboard',
     // Protect all /admin routes
     '/admin/:path*',
-    // You can add other protected routes here
-    // '/profile/:path*',
+    // Protect user routes
+    '/profile',
+    '/my-request', 
+    '/request-form',
   ]
 }

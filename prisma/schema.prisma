@@ -19,7 +19,7 @@ model User {
   password              String
   role                  UserRole @default(USER)
   isActive              Boolean  @default(true) @map("is_active")
-  division              Division?
+  division              Division @default(A)
   enablePasswordChanges Boolean  @default(false) @map("enable_password_changes")
   createdAt             DateTime @default(now()) @map("created_at")
   updatedAt             DateTime @updatedAt @map("updated_at")
@@ -61,13 +61,15 @@ model VehicleRequest {
   rejectedAt      DateTime?         @map("rejected_at")
   rejectionReason String?           @map("rejection_reason")
   checkOutAt      DateTime?         @map("check_out_at")
+  isActive        Boolean           @default(true) @map("is_active")
+  deletedAt       DateTime?         @map("deleted_at")
   createdAt       DateTime          @default(now()) @map("created_at")
   updatedAt       DateTime          @updatedAt @map("updated_at")
 
   // Relations
-  user        User    @relation(fields: [userId], references: [id])
-  vehicle     Vehicle @relation(fields: [vehicleId], references: [id])
-  createdBy   User    @relation("CreatedBy", fields: [createdById], references: [id])
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicle     Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  createdBy   User    @relation("CreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
 
   @@map("vehicle_requests")
 }

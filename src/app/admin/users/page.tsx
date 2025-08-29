@@ -34,6 +34,7 @@ import {
   HiLockOpen,
   HiExclamationCircle,
   HiPlus,
+  HiOutlineUserGroup,
 } from "react-icons/hi";
 
 interface User {
@@ -43,6 +44,7 @@ interface User {
   employeeId: string;
   phone: string | null;
   role: "USER" | "ADMIN" | "SUPER_ADMIN";
+  division: string;
   isActive: boolean;
   enablePasswordChanges: boolean;
   createdAt: string;
@@ -58,7 +60,7 @@ function AdminUsersContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  
+
   // Modal state for password change permission
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -77,9 +79,7 @@ function AdminUsersContent() {
         const data = await response.json();
         setUsers(data.users);
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to load users"
-        );
+        setError(err instanceof Error ? err.message : "Failed to load users");
       } finally {
         setIsLoading(false);
       }
@@ -146,7 +146,10 @@ function AdminUsersContent() {
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
           user.id === selectedUser.id
-            ? { ...user, enablePasswordChanges: data.user.enablePasswordChanges }
+            ? {
+                ...user,
+                enablePasswordChanges: data.user.enablePasswordChanges,
+              }
             : user
         )
       );
@@ -154,15 +157,16 @@ function AdminUsersContent() {
       // Show success message
       setError(null);
       handleCloseModal();
-      
+
       // Show temporary success message
       const successMessage = data.message;
       setError(successMessage);
       setTimeout(() => setError(null), 3000);
-
     } catch (err) {
       setModalError(
-        err instanceof Error ? err.message : "Failed to update password permission"
+        err instanceof Error
+          ? err.message
+          : "Failed to update password permission"
       );
     } finally {
       setIsUpdating(false);
@@ -179,11 +183,19 @@ function AdminUsersContent() {
 
       {/* Success/Error Message */}
       {error && (
-        <Alert 
-          color={error.includes('berhasil') || error.includes('diaktifkan') || error.includes('dinonaktifkan') ? "success" : "failure"}
+        <Alert
+          color={
+            error.includes("berhasil") ||
+            error.includes("diaktifkan") ||
+            error.includes("dinonaktifkan")
+              ? "success"
+              : "failure"
+          }
           className="mb-4"
         >
-          {error.includes('berhasil') || error.includes('diaktifkan') || error.includes('dinonaktifkan') ? (
+          {error.includes("berhasil") ||
+          error.includes("diaktifkan") ||
+          error.includes("dinonaktifkan") ? (
             <HiCheckCircle className="h-5 w-5 mr-3" />
           ) : (
             <HiXCircle className="h-5 w-5 mr-3" />
@@ -203,14 +215,14 @@ function AdminUsersContent() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        
+
         <div className="flex items-center gap-4">
           {/* Stats Card */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
             <p className="text-sm text-blue-600">Total Pengguna</p>
             <p className="text-2xl font-bold text-blue-700">{users.length}</p>
           </div>
-          
+
           {/* Add User Button */}
           <Button href="/admin/register" className="shrink-0">
             <HiPlus className="h-4 w-4 mr-2" />
@@ -237,7 +249,7 @@ function AdminUsersContent() {
                     Email
                   </TableHeadCell>
                   <TableHeadCell scope="col" className="px-6 py-3">
-                    ID Karyawan
+                    Pegawai
                   </TableHeadCell>
                   <TableHeadCell scope="col" className="px-6 py-3">
                     Telepon
@@ -302,6 +314,12 @@ function AdminUsersContent() {
                             {user.employeeId}
                           </span>
                         </div>
+                        <div className="flex items-center space-x-2">
+                          <HiOutlineUserGroup className="h-4 w-4 text-gray-400" />
+                          <span className="text-sm font-mono">
+                            {user.division}
+                          </span>
+                        </div>
                       </TableCell>
                       <TableCell>
                         {user.phone ? (
@@ -332,8 +350,8 @@ function AdminUsersContent() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge 
-                          color={user.isActive ? "success" : "gray"} 
+                        <Badge
+                          color={user.isActive ? "success" : "gray"}
                           className="flex items-center justify-center"
                         >
                           {user.isActive ? (
@@ -348,8 +366,10 @@ function AdminUsersContent() {
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col items-center space-y-2">
-                          <Badge 
-                            color={user.enablePasswordChanges ? "success" : "warning"}
+                          <Badge
+                            color={
+                              user.enablePasswordChanges ? "success" : "warning"
+                            }
                             className="flex items-center justify-center"
                           >
                             {user.enablePasswordChanges ? (
@@ -366,7 +386,9 @@ function AdminUsersContent() {
                           </Badge>
                           <Button
                             size="xs"
-                            color={user.enablePasswordChanges ? "failure" : "success"}
+                            color={
+                              user.enablePasswordChanges ? "failure" : "success"
+                            }
                             onClick={() => handlePasswordPermissionClick(user)}
                             className="text-xs"
                           >
@@ -377,17 +399,23 @@ function AdminUsersContent() {
                       </TableCell>
                       <TableCell>
                         <div className="text-sm text-gray-600">
-                          {new Date(user.createdAt).toLocaleDateString('id-ID', {
-                            day: '2-digit',
-                            month: 'short',
-                            year: 'numeric'
-                          })}
+                          {new Date(user.createdAt).toLocaleDateString(
+                            "id-ID",
+                            {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            }
+                          )}
                         </div>
                         <div className="text-xs text-gray-400">
-                          {new Date(user.createdAt).toLocaleTimeString('id-ID', {
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
+                          {new Date(user.createdAt).toLocaleTimeString(
+                            "id-ID",
+                            {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            }
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -399,16 +427,14 @@ function AdminUsersContent() {
         )}
       </Card>
 
-
-
       {/* Password Permission Modal */}
       <Modal show={showPasswordModal} onClose={handleCloseModal}>
         <ModalHeader>
           <div className="flex items-center space-x-2">
             <HiKey className="h-6 w-6 text-blue-500" />
             <span>
-              {selectedUser?.enablePasswordChanges 
-                ? "Blokir Perubahan Password" 
+              {selectedUser?.enablePasswordChanges
+                ? "Blokir Perubahan Password"
                 : "Izinkan Perubahan Password"}
             </span>
           </div>
@@ -419,8 +445,12 @@ function AdminUsersContent() {
               <HiExclamationCircle className="h-5 w-5 text-yellow-500 mt-0.5" />
               <div>
                 <p className="text-sm text-yellow-800">
-                  <strong>Peringatan:</strong> Anda akan {selectedUser?.enablePasswordChanges ? "memblokir" : "mengizinkan"} {" "}
-                  <span className="font-medium">{selectedUser?.name}</span> untuk mengubah password mereka.
+                  <strong>Peringatan:</strong> Anda akan{" "}
+                  {selectedUser?.enablePasswordChanges
+                    ? "memblokir"
+                    : "mengizinkan"}{" "}
+                  <span className="font-medium">{selectedUser?.name}</span>{" "}
+                  untuk mengubah password mereka.
                 </p>
                 <p className="text-xs text-yellow-700 mt-1">
                   Tindakan ini memerlukan konfirmasi dengan secret key admin.
@@ -436,7 +466,10 @@ function AdminUsersContent() {
             )}
 
             <div>
-              <Label htmlFor="secretKey" className="block text-sm font-medium text-gray-700 mb-2">
+              <Label
+                htmlFor="secretKey"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Secret Key Admin <span className="text-red-500">*</span>
               </Label>
               <TextInput
@@ -455,11 +488,7 @@ function AdminUsersContent() {
           </div>
         </ModalBody>
         <ModalFooter>
-          <Button
-            color="gray"
-            onClick={handleCloseModal}
-            disabled={isUpdating}
-          >
+          <Button color="gray" onClick={handleCloseModal} disabled={isUpdating}>
             Batal
           </Button>
           <Button
@@ -475,7 +504,10 @@ function AdminUsersContent() {
             ) : (
               <>
                 <HiKey className="h-4 w-4 mr-2" />
-                {selectedUser?.enablePasswordChanges ? "Blokir" : "Izinkan"} Password
+                {selectedUser?.enablePasswordChanges
+                  ? "Blokir"
+                  : "Izinkan"}{" "}
+                Password
               </>
             )}
           </Button>
@@ -487,11 +519,13 @@ function AdminUsersContent() {
 
 export default function AdminUsers() {
   return (
-    <Suspense fallback={
-      <div className="flex justify-center items-center p-8">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center p-8">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      }
+    >
       <AdminUsersContent />
     </Suspense>
   );

@@ -17,6 +17,13 @@ import { Toast } from "flowbite-react";
 import { HiCheck } from "react-icons/hi";
 import dayjs from "dayjs";
 
+// Interface for API error responses
+interface ApiErrorResponse {
+  error?: string;
+  errorCode?: string;
+  details?: unknown;
+}
+
 function PengajuanContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -29,6 +36,7 @@ function PengajuanContent() {
   const [keperluan, setKeperluan] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
   const [isError, setIsError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("Terjadi kesalahan saat mengirim pengajuan. Silakan coba lagi.");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [countdown, setCountdown] = useState(4);
 
@@ -88,11 +96,30 @@ function PengajuanContent() {
         setIsSuccess(true);
         setCountdown(4); // Reset countdown
       } else {
+        // Handle HTTP error responses
+        try {
+          const errorData: ApiErrorResponse = await res.json();
+          
+          if (errorData.errorCode === "MAX_REQUEST_PER_DAY") {
+            setErrorMessage("Maximum pengajuan per divisi hari ini sudah tercapai (2)");
+          } else if (errorData.error) {
+            setErrorMessage(errorData.error);
+          } else {
+            setErrorMessage("Terjadi kesalahan saat mengirim pengajuan. Silakan coba lagi.");
+          }
+        } catch (parseError) {
+          // If we can't parse the error response, use default message
+          console.error("Error parsing error response:", parseError);
+          setErrorMessage("Terjadi kesalahan saat mengirim pengajuan. Silakan coba lagi.");
+        }
+        
         setIsError(true);
       }
     } catch (error) {
-      console.error("Error submitting request:", error);
+      // Handle network errors or other JavaScript errors
+      console.error("Network error submitting request:", error);
       setIsError(true);
+      setErrorMessage("Terjadi kesalahan jaringan. Periksa koneksi internet Anda.");
     }
 
     setIsSubmitting(false);
@@ -113,7 +140,7 @@ function PengajuanContent() {
         style={{ backgroundImage: "url(/bg-form.jpg)" }}
       >
         <div className="absolute inset-0 bg-white opacity-80 rounded-lg"></div>
-        <div className="relative z-10 p-10">
+        <div className="relative z-10 sm:p-10">
           <h1 className="text-3xl text-center font-bold uppercase">
             Form Pengajuan penggunaan kendaraan
           </h1>
@@ -260,8 +287,7 @@ function PengajuanContent() {
                       Pengajuan Gagal!
                     </span>
                     <div className="mb-2 text-sm font-normal">
-                      Terjadi kesalahan saat mengirim pengajuan. Silakan coba
-                      lagi.
+                      {errorMessage}
                     </div>
                     <div className="flex gap-2">
                       <div className="w-auto">
