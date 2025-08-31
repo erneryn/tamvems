@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from '@/lib/db'
+import { hashSync } from "bcryptjs";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -48,24 +49,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   try {
     const { id } = await params;
     const body = await request.json();
-    const { enablePasswordChanges, secretKey } = body;
+    const { enablePasswordChanges, defaultPassword } = body;
 
-    // Validate secret key (same as admin registration secret)
-    const ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY;
-    if (!ADMIN_SECRET_KEY) {
-      return NextResponse.json(
-        { error: 'Server configuration error' },
-        { status: 500 }
-      );
-    }
-
-    if (secretKey !== ADMIN_SECRET_KEY) {
-      return NextResponse.json(
-        { error: 'Secret key tidak valid' },
-        { status: 401 }
-      );
-    }
-
+    const hashedDefaultPassword = hashSync(defaultPassword, 10);
     // Validate enablePasswordChanges is boolean
     if (typeof enablePasswordChanges !== 'boolean') {
       return NextResponse.json(
@@ -97,7 +83,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     // Update user
     const updatedUser = await db.user.update({
       where: { id },
-      data: { enablePasswordChanges },
+      data: { enablePasswordChanges, password: hashedDefaultPassword },
       select: {
         id: true,
         email: true,

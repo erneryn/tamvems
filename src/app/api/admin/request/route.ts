@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { Prisma, RequestStatus } from "@prisma/client";
 import dayjs from "dayjs";
 import { NextRequest, NextResponse } from "next/server";
+import { sendConfirmationEmail } from "@/lib/email";
 
 interface VehicleRequestFilter {
   status?: RequestStatus;
@@ -23,22 +24,39 @@ export async function GET(request: NextRequest) {
   const sortBy = searchParams.get("sortBy") || "createdAt";
   const sortOrder = searchParams.get("sortOrder") || "desc";
 
-  const filter: VehicleRequestFilter = {
-    status : status as RequestStatus || undefined,
+  // Update status to CANCELLED if current time is after endDateTime
+  const now = dayjs();
+  const expiredRequests = await db.vehicleRequest.findMany({
+    where: {
+      endDateTime: {
+        lt: now.toDate(),
+      },
+      status: "PENDING",
+    },
+  });
+  for (const request of expiredRequests) {
+    await db.vehicleRequest.update({
+      where: { id: request.id },
+      data: { status: "CANCELLED" },
+    });
   }
 
-  if(isToday) {
+  const filter: VehicleRequestFilter = {
+    status: (status as RequestStatus) || undefined,
+  };
+
+  if (isToday) {
     const dateStart = dayjs().startOf("day").toDate();
     filter.startDateTime = {
       gte: dateStart,
-    }
+    };
   }
 
-  if(isOverdue) {
+  if (isOverdue) {
     const now = dayjs();
     filter.endDateTime = {
       lt: now.toDate(),
-    }
+    };
   }
 
   // Create orderBy object dynamically
@@ -54,13 +72,13 @@ export async function GET(request: NextRequest) {
     orderBy,
     skip: page ? (Number(page) - 1) * Number(limit) : undefined,
     take: limit ? Number(limit) : undefined,
-  }
-
+  };
+console.log(requestOptions);
   // Get total count for pagination
   const totalCount = await db.vehicleRequest.count({
     where: filter,
   });
-  
+
   const requests = await db.vehicleRequest.findMany(requestOptions);
 
   // Calculate pagination metadata
@@ -77,14 +95,14 @@ export async function GET(request: NextRequest) {
       limit: limitNumber,
       hasNextPage: pageNumber < totalPages,
       hasPrevPage: pageNumber > 1,
-    }
+    },
   });
 }
 
 export async function PATCH(request: NextRequest) {
   const body = await request.json();
   const { id, status, rejectionReason, checkOutAt } = body;
-  
+
   const updateData: {
     status: RequestStatus;
     rejectionReason?: string | null;
@@ -111,7 +129,32 @@ export async function PATCH(request: NextRequest) {
   const updatedRequest = await db.vehicleRequest.update({
     where: { id },
     data: updateData,
+    select: {
+      startDateTime: true,
+      endDateTime: true,
+      destination: true,
+      user: true,
+      vehicle: true,
+    },
   });
-  
+
+  if (status === "APPROVED") {
+    const user = updatedRequest.user;
+    const vehicle = updatedRequest.vehicle;
+    const emailData = {
+      nip: user.employeeId,
+      email: user.email,
+      name: user.name,
+      mobile_number: user.phone || "",
+      date: dayjs(updatedRequest.startDateTime).format("DD/MM/YYYY"),
+      startDateTime: dayjs(updatedRequest.startDateTime).format("HH:mm"),
+      endDateTime: dayjs(updatedRequest.endDateTime).format("HH:mm"),
+      destination: updatedRequest.destination,
+      vehicleName: vehicle?.name || "",
+      vehiclePlate: vehicle?.plate || "",
+    };
+    await sendConfirmationEmail(emailData);
+  }
+
   return NextResponse.json(updatedRequest);
 }

@@ -81,3 +81,9 @@ export const passwordChangeSchema = object({
     .min(5, "New password must be at least 5 characters")
     .max(20, "New password must be less than 20 characters"),
 })
+
+export const userModificationSchema = object({
+  action: zodEnum(["deactivate", "delete"], {
+    message: "Action must be either 'deactivate' or 'delete'"
+  }),
+})

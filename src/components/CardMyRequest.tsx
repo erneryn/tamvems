@@ -10,6 +10,8 @@ const InfoStatus: Record<string, string> = {
     "Pengajuan anda telah disetujui, namun sampai saat ini kendaraan masih digunakan oleh pengguna lain",
   "COMPLETED":
     "Kendaraan sudah dikembalikan",
+  "CANCELLED":
+    "Pengajuan anda telah dibatalkan",
 };
 
 export default function Card({
@@ -133,6 +135,11 @@ export default function Card({
                 </>
               )}
               {status === "COMPLETED" && (
+                <span className="inline-block rounded-2xl bg-gray-400 px-5 py-2 text-xs font-semibold text-white">
+                  {status}
+                </span>
+              )}
+              {status === "CANCELLED" && (
                 <span className="inline-block rounded-2xl bg-gray-400 px-5 py-2 text-xs font-semibold text-white">
                   {status}
                 </span>

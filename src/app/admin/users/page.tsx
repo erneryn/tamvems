@@ -68,6 +68,13 @@ function AdminUsersContent() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
 
+  // Modal state for user modification (deactivate/delete)
+  const [showActionModal, setShowActionModal] = useState(false);
+  const [actionType, setActionType] = useState<'deactivate' | 'delete' | null>(null);
+  const [selectedActionUser, setSelectedActionUser] = useState<User | null>(null);
+  const [isProcessingAction, setIsProcessingAction] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+
   // Fetch users data
   useEffect(() => {
     const fetchUsers = async () => {
@@ -114,6 +121,87 @@ function AdminUsersContent() {
     setIsUpdating(false);
   };
 
+  // Handle opening action modal
+  const handleActionClick = (user: User, action: 'deactivate' | 'delete') => {
+    setSelectedActionUser(user);
+    setActionType(action);
+    setShowActionModal(true);
+    setActionError(null);
+  };
+
+  // Handle closing action modal
+  const handleCloseActionModal = () => {
+    setShowActionModal(false);
+    setSelectedActionUser(null);
+    setActionType(null);
+    setActionError(null);
+    setIsProcessingAction(false);
+  };
+
+  // Handle user modification action
+  const handleUserAction = async () => {
+    if (!selectedActionUser || !actionType) {
+      setActionError("Data tidak lengkap");
+      return;
+    }
+
+    setIsProcessingAction(true);
+    setActionError(null);
+
+    try {
+      const response = await fetch(`/api/admin/user/${selectedActionUser.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: actionType,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || `Failed to ${actionType} user`);
+      }
+
+      // Update the user in the list
+      setUsers((prevUsers) => {
+        if(actionType === 'deactivate') {
+          return prevUsers.map((user) => {
+            if(user.id === selectedActionUser.id) {
+              return { ...user, isActive: data.user.isActive, updatedAt: data.user.updatedAt };
+            }
+            return user;
+          });
+        }
+
+        if(actionType === 'delete') {
+          return prevUsers.filter((user) => {
+            if(user.id === selectedActionUser.id) {
+              return user.id !== selectedActionUser.id;
+            }
+            return true;
+          });
+        }
+
+        return prevUsers;
+      }
+      );
+
+      // Show success message
+      setError(data.message);
+      setTimeout(() => setError(null), 3000);
+      handleCloseActionModal();
+    } catch (err) {
+      setActionError(
+        err instanceof Error ? err.message : `Failed to ${actionType} user`
+      );
+    } finally {
+      setIsProcessingAction(false);
+    }
+  };
+
   // Handle updating password permission
   const handleUpdatePasswordPermission = async () => {
     if (!selectedUser || !secretKey.trim()) {
@@ -132,7 +220,7 @@ function AdminUsersContent() {
         },
         body: JSON.stringify({
           enablePasswordChanges: !selectedUser.enablePasswordChanges,
-          secretKey: secretKey.trim(),
+          defaultPassword: secretKey.trim(),
         }),
       });
 
@@ -264,6 +352,9 @@ function AdminUsersContent() {
                     Ubah Password
                   </TableHeadCell>
                   <TableHeadCell scope="col" className="px-6 py-3">
+                    Aksi
+                  </TableHeadCell>
+                  <TableHeadCell scope="col" className="px-6 py-3">
                     Bergabung
                   </TableHeadCell>
                 </TableRow>
@@ -272,7 +363,7 @@ function AdminUsersContent() {
                 {filteredUsers.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={8}
+                      colSpan={9}
                       className="text-center py-10 text-gray-500"
                     >
                       {searchTerm
@@ -398,6 +489,31 @@ function AdminUsersContent() {
                         </div>
                       </TableCell>
                       <TableCell>
+                        <div className="flex flex-col items-center space-y-2">
+                          {user.isActive ? (
+                            <Button
+                              size="xs"
+                              color="warning"
+                              onClick={() => handleActionClick(user, 'deactivate')}
+                              className="text-xs w-full"
+                            >
+                              <HiXCircle className="mr-1 h-3 w-3" />
+                              Nonaktifkan
+                            </Button>
+                          ) : (
+                            <Button
+                              size="xs"
+                              color="failure"
+                              onClick={() => handleActionClick(user, 'delete')}
+                              className="text-xs w-full"
+                            >
+                              <HiXCircle className="mr-1 h-3 w-3" />
+                              Hapus
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
                         <div className="text-sm text-gray-600">
                           {new Date(user.createdAt).toLocaleDateString(
                             "id-ID",
@@ -453,7 +569,7 @@ function AdminUsersContent() {
                   untuk mengubah password mereka.
                 </p>
                 <p className="text-xs text-yellow-700 mt-1">
-                  Tindakan ini memerlukan konfirmasi dengan secret key admin.
+                  Tindakan ini memerlukan password default yang akan diganti.
                 </p>
               </div>
             </div>
@@ -470,19 +586,19 @@ function AdminUsersContent() {
                 htmlFor="secretKey"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Secret Key Admin <span className="text-red-500">*</span>
+                Password Default <span className="text-red-500">*</span>
               </Label>
               <TextInput
                 id="secretKey"
                 type="password"
-                placeholder="Masukkan secret key admin"
+                placeholder="Masukkan password default"
                 value={secretKey}
                 onChange={(e) => setSecretKey(e.target.value)}
                 disabled={isUpdating}
                 required
               />
               <p className="mt-1 text-xs text-gray-500">
-                Gunakan secret key yang sama seperti saat mendaftarkan admin
+                  Gunakan password default ini untuk login, arahkan pengguna untuk mengubah password setelah login pertama.
               </p>
             </div>
           </div>
@@ -508,6 +624,100 @@ function AdminUsersContent() {
                   ? "Blokir"
                   : "Izinkan"}{" "}
                 Password
+              </>
+            )}
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      {/* User Action Confirmation Modal */}
+      <Modal show={showActionModal} onClose={handleCloseActionModal}>
+        <ModalHeader>
+          <div className="flex items-center space-x-2">
+            <HiExclamationCircle className="h-6 w-6 text-red-500" />
+            <span>
+              {actionType === 'deactivate'
+                ? 'Nonaktifkan Pengguna'
+                : 'Hapus Pengguna'}
+            </span>
+          </div>
+        </ModalHeader>
+        <ModalBody>
+          <div className="space-y-4">
+            <div className="flex items-start space-x-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <HiExclamationCircle className="h-5 w-5 text-red-500 mt-0.5" />
+              <div>
+                <p className="text-sm text-red-800">
+                  <strong>Peringatan:</strong> Anda akan{' '}
+                  {actionType === 'deactivate'
+                    ? 'menonaktifkan'
+                    : 'menghapus'}{' '}
+                  pengguna <span className="font-medium">{selectedActionUser?.name}</span>.
+                </p>
+                {actionType === 'deactivate' ? (
+                  <p className="text-xs text-red-700 mt-1">
+                    Pengguna yang dinonaktifkan tidak akan dapat login ke sistem.
+                  </p>
+                ) : (
+                  <p className="text-xs text-red-700 mt-1">
+                    Tindakan ini akan menghapus pengguna secara permanen. Pengguna harus sudah dinonaktifkan terlebih dahulu.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {actionError && (
+              <Alert color="failure">
+                <HiXCircle className="h-4 w-4 mr-2" />
+                {actionError}
+              </Alert>
+            )}
+
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="text-sm font-medium text-gray-900 mb-2">Detail Pengguna:</h4>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="text-gray-500">Nama:</span>
+                  <span className="ml-2 font-medium">{selectedActionUser?.name}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Email:</span>
+                  <span className="ml-2 font-medium">{selectedActionUser?.email}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500">NIP:</span>
+                  <span className="ml-2 font-medium">{selectedActionUser?.employeeId}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Status:</span>
+                  <span className={`ml-2 font-medium ${
+                    selectedActionUser?.isActive ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {selectedActionUser?.isActive ? 'Aktif' : 'Nonaktif'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ModalBody>
+        <ModalFooter>
+          <Button color="gray" onClick={handleCloseActionModal} disabled={isProcessingAction}>
+            Batal
+          </Button>
+          <Button
+            color={actionType === 'deactivate' ? 'warning' : 'failure'}
+            onClick={handleUserAction}
+            disabled={isProcessingAction}
+          >
+            {isProcessingAction ? (
+              <>
+                <Spinner size="sm" className="mr-2" />
+                Memproses...
+              </>
+            ) : (
+              <>
+                <HiXCircle className="h-4 w-4 mr-2" />
+                {actionType === 'deactivate' ? 'Nonaktifkan' : 'Hapus'}
               </>
             )}
           </Button>
