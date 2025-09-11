@@ -11,7 +11,7 @@ interface ConditionalLayoutProps {
 export default function ConditionalLayout({ children }: ConditionalLayoutProps) {
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith('/admin');
-  const isUserRoute = ['/dashboard', '/my-request', '/request-form'].includes(pathname || '');
+  const isUserRoute = ['/dashboard', '/my-request', '/request-form','/profile'].includes(pathname || '');
   if (isAdminRoute) {
     // For admin routes, only render children without header/footer
     return <>{children}</>;

@@ -169,6 +169,7 @@ export default function Dashboard() {
                 Waktu Selesai
               </label>
               <TimePicker
+                min={parseInt(selectedStartTime) + 1}
                 placeholder="Pilih waktu selesai"
                 value={selectedEndTime}
                 onChange={setSelectedEndTime}

@@ -2,7 +2,8 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import dayjs from "dayjs";
-import { VehicleRequest } from "@prisma/client";
+import { VehicleRequest, Prisma } from "@prisma/client";
+import { getDateRangeFilter } from "@/lib/filters";
 
 export async function GET(request: NextRequest) {
   // Get the authenticated user session
@@ -11,11 +12,33 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // Get query parameters for filtering
+  const { searchParams } = new URL(request.url);
+  const status = searchParams.get("status");
+  const dateRange = searchParams.get("dateRange");
+  const sortOrder = searchParams.get("sortOrder") || "desc";
+
+  // Build where clause
+  const where: Prisma.VehicleRequestWhereInput = {
+    userId: session.user.id,
+    deletedAt: null
+  };
+
+  // Add status filter if provided
+  if (status) {
+    where.status = status as Prisma.EnumRequestStatusFilter;
+  }
+
+  // Add date range filter if provided
+  if (dateRange) {
+    const dateFilter = getDateRangeFilter(dateRange);
+    if (dateFilter) {
+      where.startDateTime = dateFilter;
+    }
+  }
+
   const userRequest = await db.vehicleRequest.findMany({
-    where: {
-      userId: session.user.id,
-      deletedAt: null
-    },
+    where,
     include: {
       vehicle: {
         select: {
@@ -27,7 +50,7 @@ export async function GET(request: NextRequest) {
       },
     },
     orderBy: {
-      createdAt: "desc",
+      createdAt: sortOrder === "desc" ? "desc" : "asc",
     },
   });
 
