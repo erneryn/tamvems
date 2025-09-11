@@ -33,7 +33,7 @@ declare module "next-auth" {
     email: string
     role: string
     name: string
-    employeeId: string
+    employeeId?: string
   }
 
   interface Session {
@@ -42,7 +42,7 @@ declare module "next-auth" {
       email: string
       role: string
       name: string
-      employeeId: string
+      employeeId?: string
     }
   }
 }

@@ -3,7 +3,7 @@ import handlebars from 'handlebars';
 import nodemailer from 'nodemailer';
 
 interface VehicleRequest {
-  nip: string;
+  nip?: string | null;
   email: string;
   name: string;
   mobile_number: string;
@@ -20,7 +20,7 @@ export async function sendConfirmationEmail(request: VehicleRequest) {
   const templateEmail = fs.readFileSync(`${process.cwd()}/public/approved.html`, 'utf-8');
   const renderTemplate = handlebars.compile(templateEmail);
   const content = renderTemplate({
-    nip: request.nip,
+    nip: request.nip || '',
     name: request.name,
     mobile_number: request.mobile_number,
     date: request.date,

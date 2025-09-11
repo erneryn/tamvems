@@ -5,7 +5,7 @@ import { userModificationSchema } from "@/lib/zod";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -37,7 +37,8 @@ export async function PUT(
     }
 
     const { action } = validatedData.data;
-    const userId = params.id;
+    const { id } = await params;
+    const userId = id;
 
     // Check if target user exists
     const targetUser = await db.user.findUnique({

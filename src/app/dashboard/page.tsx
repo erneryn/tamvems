@@ -206,6 +206,7 @@ export default function Dashboard() {
                   image={vehicle.image || "/default-car.png"}
                   bookings={vehicle.bookings}
                   onClick={() => handleUseClick(vehicle.id)}
+                  isOverlapping={vehicle.isOverlapping || false}
                 />
               ))}
             {vehicles.length === 0 && (

@@ -30,15 +30,18 @@ export async function POST(request: NextRequest) {
         )
       }
       
-      const existingUserByEmployeeId = await db.user.findUnique({
-        where: { employeeId }
-      })
-      
-      if(existingUserByEmployeeId) {
-        return NextResponse.json(
-          { error: 'Employee ID sudah terdaftar' },
-          { status: 400 }
-        )
+      // Check if user already exists by employee ID (only if employeeId is provided)
+      if (employeeId) {
+        const existingUserByEmployeeId = await db.user.findFirst({
+          where: { employeeId }
+        })
+        
+        if(existingUserByEmployeeId) {
+          return NextResponse.json(
+            { error: 'Employee ID sudah terdaftar' },
+            { status: 400 }
+          )
+        }
       }
       
       const hashedPassword = hashSync(password, 10)
@@ -47,7 +50,7 @@ export async function POST(request: NextRequest) {
         data: {
           name,
           email,
-          employeeId,
+          employeeId: employeeId || null,
           phone: phone || null,
           password: hashedPassword,
           role: 'ADMIN',
@@ -84,19 +87,21 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Check if user already exists by employee ID
-    const existingUserByEmployeeId = await db.user.findUnique({
-      where: { employeeId }
-    })
-    
-    if (existingUserByEmployeeId) {
-      return NextResponse.json(
-        { 
-          error: 'Employee ID sudah terdaftar',
-          field: 'employeeId'
-        },
-        { status: 400 }
-      )
+    // Check if user already exists by employee ID (only if employeeId is provided)
+    if (employeeId) {
+      const existingUserByEmployeeId = await db.user.findFirst({
+        where: { employeeId }
+      })
+      
+      if (existingUserByEmployeeId) {
+        return NextResponse.json(
+          { 
+            error: 'Employee ID sudah terdaftar',
+            field: 'employeeId'
+          },
+          { status: 400 }
+        )
+      }
     }
     
     // Hash password
@@ -107,7 +112,7 @@ export async function POST(request: NextRequest) {
       data: {
         name,
         email,
-        employeeId,
+        employeeId: employeeId || null,
         phone: phone || null,
         password: hashedPassword,
         role: 'USER', // Default role

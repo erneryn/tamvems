@@ -9,7 +9,7 @@ interface UserProfile {
   id: string;
   email: string;
   name: string;
-  employeeId: string;
+  employeeId?: string;
   phone: string | null;
   role: string;
   division: string;
@@ -196,17 +196,6 @@ export default function Profile() {
               <p className="text-sm text-gray-500 mt-1">Email tidak dapat diubah</p>
             </div>
 
-            <div>
-              <Label htmlFor="employeeId">Employee ID</Label>
-              <TextInput
-                id="employeeId"
-                value={profile?.employeeId || ''}
-                disabled
-                icon={HiUser}
-                className="mt-1"
-              />
-              <p className="text-sm text-gray-500 mt-1">Employee ID tidak dapat diubah</p>
-            </div>
 
             <div>
               <Label htmlFor="name">Nama Lengkap</Label>

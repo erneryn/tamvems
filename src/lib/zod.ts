@@ -16,9 +16,7 @@ export const registerSchema = object({
   email: string({message: "Email is required"})
     .min(1, "Email is required")
     .email("Invalid email"),
-  employeeId: string({message: "Employee ID is required"})
-    .min(1, "Employee ID is required")
-    .max(50, "Employee ID must be less than 50 characters"),
+  employeeId: string().optional(),
   phone: string().optional(),
   password: string({message: "Password is required"})
     .min(5, "Password harus lebih dari 5 karakter")
@@ -37,9 +35,7 @@ export const adminRegisterSchema = object({
   email: string({message: "Email is required"})
     .min(1, "Email is required")
     .email("Invalid email"),
-  employeeId: string({message: "Employee ID is required"})
-    .min(1, "Employee ID is required")
-    .max(50, "Employee ID must be less than 50 characters"),
+  employeeId: string().optional(),
   phone: string().optional(),
   password: string({message: "Password is required"})
     .min(1, "Password is required")

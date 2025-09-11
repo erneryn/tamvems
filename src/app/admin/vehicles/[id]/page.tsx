@@ -343,7 +343,7 @@ export default function VehicleDetailPage() {
             </div>
 
             <div>
-              <Label htmlFor="type">Tipe Kendaraan</Label>
+              <Label htmlFor="type">Bahan Bakar</Label>
               <Select
                 id="type"
                 name="type"

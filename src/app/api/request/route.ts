@@ -4,9 +4,6 @@ import { auth } from "@/auth";
 import { z } from "zod";
 import { RequestStatus, VehicleType } from "@prisma/client";
 import  dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-
-dayjs.extend(utc);
 
 const requestSchema = z.object({
   vehicleId: z.string(),
@@ -29,6 +26,7 @@ interface VehicleRequestFilter {
   }>
   status?: RequestStatus;
   isActive?: boolean;
+  deletedAt?: Date | null;
 }
 
 export interface VehicleResponse {
@@ -44,6 +42,7 @@ export interface VehicleResponse {
     startDateTime: string;
     endDateTime: string;
   }[];
+  isOverlapping?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -65,6 +64,7 @@ export async function GET(request: NextRequest) {
     // Build the query filter
     const filter: VehicleRequestFilter = {
       status: 'APPROVED',
+      deletedAt: null,
     };
 
     if (startDate && startTime && endTime) {
@@ -120,21 +120,49 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    console.log(approvedRequests);
+
     const vehicles = await db.vehicle.findMany({
       where: {
         isActive: true,
       },
     });
 
+    const unCheckOutVehicle = await db.vehicleRequest.findMany({
+      where: {
+        status: 'APPROVED',
+        checkOutAt: null,
+        deletedAt: null,
+      },
+    });
+
     const vehicleResponse: VehicleResponse[] = vehicles.map((vehicle) => {
-      const vehicleRequest = approvedRequests.filter((request) => request.vehicleId === vehicle.id);
+      const statusData = {
+        isAvailable: true,
+        bookings : [] as {
+          startDateTime: string;
+          endDateTime: string;
+        }[],
+        isOverlapping: false,
+      }
+      const unCheckOutVehicleRequest = unCheckOutVehicle.find((request) => request.vehicleId === vehicle.id);
+    
+      if(unCheckOutVehicleRequest) {
+        statusData.isAvailable = false;
+        statusData.bookings = [];
+        statusData.isOverlapping = true;
+      } else {
+        const vehicleRequest = approvedRequests.filter((request) => request.vehicleId === vehicle.id);
+        if(vehicleRequest.length > 0) {
+          statusData.bookings = vehicleRequest.map((request) => ({
+              startDateTime: dayjs(request.startDateTime).format("HH:mm"),
+              endDateTime: dayjs(request.endDateTime).format("HH:mm"),
+            }));
+        }
+      }
       return {
         ...vehicle,
-        isAvailable: vehicleRequest.length > 0 ? false : true,
-        bookings : vehicleRequest.map((request) => ({
-          startDateTime: dayjs(request.startDateTime).format("HH:mm"),
-          endDateTime: dayjs(request.endDateTime).format("HH:mm"),
-        })),
+        ...statusData,
       }
     })
 

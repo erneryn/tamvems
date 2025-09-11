@@ -203,18 +203,6 @@ function PengajuanContent() {
               </div>
               <div>
                 <div className="mb-2 block">
-                  <Label htmlFor="employeeId">Nomor Induk Pegawai</Label>
-                </div>
-                <TextInput
-                  id="employeeId"
-                  type="text"
-                  value={user?.employeeId || ""}
-                  disabled
-                  shadow
-                />
-              </div>
-              <div>
-                <div className="mb-2 block">
                   <Label htmlFor="keperluan">Keperluan</Label>
                 </div>
                 <TextInput

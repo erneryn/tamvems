@@ -212,7 +212,7 @@ export default function VehicleRegisterForm() {
         {/* Vehicle Type */}
         <div>
           <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
-            Tipe Kendaraan <span className="text-red-500">*</span>
+            Bahan Bakar <span className="text-red-500">*</span>
           </label>
           <select
             id="type"

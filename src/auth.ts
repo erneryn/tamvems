@@ -48,7 +48,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               isActive: true,
               role: true,
               name: true,
-              employeeId: true,
             },
           })
           
@@ -72,7 +71,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             email: user.email,
             role: user.role,
             name: user.name,
-            employeeId: user.employeeId,
           }
         } catch (error) {          
           // Re-throw our custom errors so they can be handled properly
@@ -109,7 +107,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = token.id as string
         session.user.role = token.role as string
         session.user.name = token.name as string
-        session.user.employeeId = token.employeeId as string
       }
       return session
     },

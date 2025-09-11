@@ -15,7 +15,6 @@ import {
 import { 
   HiMail, 
   HiUser, 
-  HiIdentification, 
   HiPhone, 
   HiKey, 
   HiCheckCircle, 
@@ -29,7 +28,6 @@ export default function Register() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    employeeId: "",
     phone: "",
     division: "",
   });
@@ -110,7 +108,6 @@ export default function Register() {
       setFormData({
         name: "",
         email: "",
-        employeeId: "",
         phone: "",
         division: "",
       });
@@ -190,20 +187,6 @@ export default function Register() {
                 />
               </div>
 
-              <div>
-                <Label htmlFor="employeeId">Nomor Induk</Label>
-                <TextInput
-                  id="employeeId"
-                  name="employeeId"
-                  type="text"
-                  icon={HiIdentification}
-                  placeholder="Masukkan nomor induk"
-                  value={formData.employeeId}
-                  onChange={handleInputChange}
-                  disabled={isLoading}
-                  required
-                />
-              </div>
 
               <div>
                 <Label htmlFor="phone">Nomor Handphone</Label>

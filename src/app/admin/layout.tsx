@@ -33,7 +33,7 @@ const navItems: NavItem[] = [
   { href: "/admin/users", label: "Kelola Pengguna", icon: HiUsers },
   { href: "/admin/requests", label: "Kelola Pengajuan", icon: HiClipboardList },
   { href: "/admin/vehicles", label: "Kelola Kendaraan", icon: HiTruck },
-  { href: "/admin/reports", label: "Laporan", icon: HiChartBar },
+  { href: "/admin/report", label: "Laporan", icon: HiChartBar },
   { href: "/admin/settings", label: "Pengaturan", icon: HiCog },
 ];
 

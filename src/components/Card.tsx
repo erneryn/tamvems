@@ -13,13 +13,14 @@ export default function Card({
   horizontal = false,
   onClick,
   bookings,
+  isOverlapping,
 }: {
   id: string;
   title: string;
   plate: string;
   description: string;
   isAvailable: boolean;
-
+  isOverlapping: boolean;
   year: string;
   image: string;
   horizontal?: boolean;
@@ -72,6 +73,11 @@ export default function Card({
         vehicleId={id}
       />
       <div className="absolute top-0 right-0 z-10 p-3 flex flex-col gap-2">
+        {isOverlapping && (
+          <span className="ml-3 mr-2 rounded bg-red-400 px-5 py-1 text-xs font-semibold text-white ">
+            Belum Kembali
+          </span>
+        )}
         {isAvailable ? (
           <span className="ml-3 mr-2 rounded bg-green-400 px-5 py-1 text-xs font-semibold text-white ">
             Tersedia Sekarang

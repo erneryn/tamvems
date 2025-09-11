@@ -4,15 +4,7 @@ import dayjs from "dayjs";
 import { NextRequest, NextResponse } from "next/server";
 import { sendConfirmationEmail } from "@/lib/email";
 
-interface VehicleRequestFilter {
-  status?: RequestStatus;
-  startDateTime?: {
-    gte?: Date;
-  };
-  endDateTime?: {
-    lt?: Date;
-  };
-}
+// Remove custom interface - use Prisma's built-in types
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -41,8 +33,9 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const filter: VehicleRequestFilter = {
+  const filter: Prisma.VehicleRequestWhereInput = {
     status: (status as RequestStatus) || undefined,
+    deletedAt: null, // Simplified syntax for null check
   };
 
   if (isToday) {
@@ -73,7 +66,7 @@ export async function GET(request: NextRequest) {
     skip: page ? (Number(page) - 1) * Number(limit) : undefined,
     take: limit ? Number(limit) : undefined,
   };
-console.log(requestOptions);
+
   // Get total count for pagination
   const totalCount = await db.vehicleRequest.count({
     where: filter,
@@ -142,7 +135,7 @@ export async function PATCH(request: NextRequest) {
     const user = updatedRequest.user;
     const vehicle = updatedRequest.vehicle;
     const emailData = {
-      nip: user.employeeId,
+      nip: user.employeeId || null,
       email: user.email,
       name: user.name,
       mobile_number: user.phone || "",

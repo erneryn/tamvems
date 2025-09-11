@@ -2,11 +2,8 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
 import { VehicleRequest } from "@prisma/client";
-dayjs.extend(timezone);
-dayjs.extend(utc);
+
 export async function GET(request: NextRequest) {
   // Get the authenticated user session
   const session = await auth();
@@ -17,6 +14,7 @@ export async function GET(request: NextRequest) {
   const userRequest = await db.vehicleRequest.findMany({
     where: {
       userId: session.user.id,
+      deletedAt: null
     },
     include: {
       vehicle: {
@@ -24,6 +22,7 @@ export async function GET(request: NextRequest) {
           id: true,
           name: true,
           plate: true,
+          image: true,
         },
       },
     },
