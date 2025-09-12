@@ -4,6 +4,11 @@ import { auth } from "@/auth";
 import { z } from "zod";
 import { RequestStatus, VehicleType } from "@prisma/client";
 import  dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const requestSchema = z.object({
   vehicleId: z.string(),
@@ -226,9 +231,11 @@ export async function POST(request: NextRequest) {
     }
 
     
-    const startDateTime = new Date(`${startDate} ${startTime}:00`);
-    const endDateTime = new Date(`${endDate} ${endTime}:00`);
-
+    // Parse input times as Jakarta timezone (UTC+7) and convert to UTC
+    // Example: Input 09:00 Jakarta time -> Output 02:00 UTC (09 - 7 = 02)
+    const startDateTime = dayjs.tz(`${startDate} ${startTime}:00`, 'YYYY-MM-DD HH:mm:ss', 'Asia/Jakarta').utc().toDate();
+    const endDateTime = dayjs.tz(`${endDate} ${endTime}:00`, 'YYYY-MM-DD HH:mm:ss', 'Asia/Jakarta').utc().toDate();
+    
     const newVehicleRequest = await db.vehicleRequest.create({
       data: {
         vehicleId,
