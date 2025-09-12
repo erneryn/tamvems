@@ -4,6 +4,9 @@ import { auth } from "@/auth";
 import { z } from "zod";
 import { RequestStatus, VehicleType } from "@prisma/client";
 import  dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+
+dayjs.extend(utc);
 
 const requestSchema = z.object({
   vehicleId: z.string(),
@@ -68,8 +71,8 @@ export async function GET(request: NextRequest) {
     };
 
     if (startDate && startTime && endTime) {
-      const startDateTime = dayjs(`${startDate} ${startTime}:00`).toDate();
-      const endDateTime = dayjs(`${startDate} ${endTime}:00`).toDate();
+      const startDateTime = dayjs.utc(`${startDate} ${startTime}:00`).toDate();
+      const endDateTime = dayjs.utc(`${startDate} ${endTime}:00`).toDate();
 
       filter.AND = [
         {
@@ -205,8 +208,8 @@ export async function POST(request: NextRequest) {
     const todayRequest = await db.vehicleRequest.findMany({
       where: {
         createdAt: {
-          gte: dayjs().startOf('day').toDate(),
-          lte: dayjs().endOf('day').toDate(),
+          gte: dayjs.utc().startOf('day').toDate(),
+          lte: dayjs.utc().endOf('day').toDate(),
         },
       },
       include: {
@@ -227,8 +230,8 @@ export async function POST(request: NextRequest) {
     }
 
     
-    const startDateTime = dayjs(`${startDate} ${startTime}:00`).toDate();
-    const endDateTime = dayjs(`${endDate} ${endTime}:00`).toDate();
+    const startDateTime = dayjs.utc(`${startDate} ${startTime}:00`).toDate();
+    const endDateTime = dayjs.utc(`${endDate} ${endTime}:00`).toDate();
 
     const newVehicleRequest = await db.vehicleRequest.create({
       data: {
