@@ -1,12 +1,10 @@
 "use client";
 import {
   Button,
-  Checkbox,
   Label,
   TextInput,
   ToastToggle,
 } from "flowbite-react";
-import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
@@ -32,7 +30,6 @@ function PengajuanContent() {
   const requestStartTime = searchParams.get("startTime");
   const requestEndTime = searchParams.get("endTime");
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
-  const [isChecked, setIsChecked] = useState(false);
   const [keperluan, setKeperluan] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
   const [isError, setIsError] = useState(false);
@@ -171,7 +168,7 @@ function PengajuanContent() {
                 <span className="text-xl text-gray-500">{vehicle.type}</span>
               </div>
               <div className="p-2 border-b-2  border-gray-300">
-                <h1 className="text-lg font-bold">Tanggal Pengajuan</h1>
+                <h1 className="text-lg font-bold">Tanggal Penggunaan</h1>
                 <span className="text-xl text-gray-500">
                   {dayjs(requestDate).format("DD-MM-YYYY")}
                 </span>
@@ -214,25 +211,9 @@ function PengajuanContent() {
                   shadow
                 />
               </div>
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="agree"
-                  checked={isChecked}
-                  onChange={() => setIsChecked(!isChecked)}
-                />
-                <Label htmlFor="agree" className="flex">
-                  I setuju dengan&nbsp;
-                  <Link
-                    href="#"
-                    className="text-cyan-600 hover:underline dark:text-cyan-500"
-                  >
-                    syarat dan ketentuan
-                  </Link>
-                </Label>
-              </div>
               <Button
                 type="submit"
-                disabled={!isChecked || keperluan === "" || isSubmitting}
+                disabled={keperluan === "" || isSubmitting}
               >
                 {isSubmitting ? "Mengirim..." : "Submit Pengajuan"}
               </Button>

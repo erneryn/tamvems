@@ -1,6 +1,15 @@
+"use client";
 import Link from "next/link";
+import { useState } from "react";
+import InformationModal from "./InformationModal";
 
 export default function Hero() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleRegistrationClick = () => {
+    setIsModalOpen(true);
+  };
+
   return (
     <div
       className="pt-40 px-0 sm:px-6 lg:px-8 rounded-b-2xl mb-10"
@@ -26,15 +35,22 @@ export default function Hero() {
               >
                 Login
               </Link>
-              <Link
-                href="/register"
+              <button
+                onClick={handleRegistrationClick}
                 className="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-8 py-3 rounded-lg text-lg font-medium transition-colors"
               >
                 Ajukan Pendaftaran
-              </Link>
+              </button>
             </div>
         </div>
       </div>
+      
+      <InformationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Informasi Pendaftaran"
+        message="Silahkan hubungi admin divisi untuk menggunakan aplikasi ini"
+      />
     </div>
   );
 }
