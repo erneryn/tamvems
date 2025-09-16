@@ -137,6 +137,7 @@ export async function GET(request: NextRequest) {
         status: 'APPROVED',
         checkOutAt: null,
         deletedAt: null,
+        userId: session.user.id,
       },
     });
 
