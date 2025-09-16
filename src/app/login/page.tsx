@@ -16,6 +16,24 @@ const initialState: ActionState = {
 export default function Login() {
   const [state, formAction, isPending] = useActionState(signInAction, initialState);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  // Load remembered credentials on component mount
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem("rememberedEmail");
+    const rememberedPassword = localStorage.getItem("rememberedPassword");
+    const wasRemembered = localStorage.getItem("rememberCredentials") === "true";
+    
+    if (wasRemembered && rememberedEmail) {
+      setEmail(rememberedEmail);
+      setRememberMe(true);
+      if (rememberedPassword) {
+        setPassword(rememberedPassword);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (state.success && state.redirectTo) {
@@ -23,6 +41,37 @@ export default function Login() {
       window.location.href = state.redirectTo;
     }
   }, [state.success, state.redirectTo, isPending]);
+
+  // Handle saving/clearing credentials
+  const handleRememberChange = (checked: boolean) => {
+    setRememberMe(checked);
+    if (!checked) {
+      // Clear remembered credentials if unchecked
+      localStorage.removeItem("rememberedEmail");
+      localStorage.removeItem("rememberedPassword");
+      localStorage.removeItem("rememberCredentials");
+    }
+  };
+
+  // Custom form submission handler
+  const handleSubmit = (formData: FormData) => {
+    // Save credentials if remember me is checked
+    if (rememberMe) {
+      localStorage.setItem("rememberedEmail", email);
+      localStorage.setItem("rememberedPassword", password);
+      localStorage.setItem("rememberCredentials", "true");
+    } else {
+      localStorage.removeItem("rememberedEmail");
+      localStorage.removeItem("rememberedPassword");
+      localStorage.removeItem("rememberCredentials");
+    }
+
+    // Add rememberMe flag to form data for 30-day session
+    formData.set("rememberMe", rememberMe.toString());
+    
+    // Call the original form action
+    formAction(formData);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
@@ -93,7 +142,7 @@ export default function Login() {
               <p className="text-gray-600">Masuk ke akun Anda untuk melanjutkan</p>
             </div>
 
-            <form action={formAction} className="space-y-6">
+            <form action={handleSubmit} className="space-y-6">
               {state.error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
                   <p className="text-sm">{state.error}</p>
@@ -108,6 +157,8 @@ export default function Login() {
                   type="email"
                   id="email"
                   name="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   placeholder="Masukkan email atau username"
                   required
@@ -123,6 +174,8 @@ export default function Login() {
                     type={showPassword ? "text" : "password"}
                     id="password"
                     name="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     placeholder="Masukkan password"
                     required
@@ -142,9 +195,12 @@ export default function Login() {
               </div>
 
               <div className="flex items-center justify-between">
-                <label className="flex items-center">
+                <label className="flex items-center cursor-pointer">
                   <input
                     type="checkbox"
+                    name="rememberMe"
+                    checked={rememberMe}
+                    onChange={(e) => handleRememberChange(e.target.checked)}
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
                   <span className="ml-2 text-sm text-gray-600">Ingat saya</span>

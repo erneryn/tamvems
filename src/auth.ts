@@ -15,7 +15,7 @@ export class LoginError extends CredentialsSignin {
 export const { handlers, signIn, signOut, auth } = NextAuth({
   session: {
     strategy: "jwt",
-    maxAge: 7 * 24 * 60 * 60, // 3 days
+    maxAge: 30 * 24 * 60 * 60, // 30 days
     updateAge: 24 * 60 * 60, // 24 hours
   },
   providers: [
@@ -89,7 +89,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     error: '/login',
   },
   callbacks: {
-    async signIn({ user, credentials }) {
+    async signIn({ user }) {
       return !!user
     },
     async jwt({ token, user }) {

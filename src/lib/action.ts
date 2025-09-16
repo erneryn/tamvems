@@ -30,7 +30,7 @@ export const signInAction = async (prevState: ActionState, formData: FormData): 
   const { email, password } = validatedData.data;
 
   try {
-    const result = await signIn("credentials", {
+    await signIn("credentials", {
       email,
       password,
       redirect: false,
