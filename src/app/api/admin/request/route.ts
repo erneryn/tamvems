@@ -1,8 +1,13 @@
 import { db } from "@/lib/db";
 import { Prisma, RequestStatus } from "@prisma/client";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 import { NextRequest, NextResponse } from "next/server";
 import { sendConfirmationEmail } from "@/lib/email";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 // Remove custom interface - use Prisma's built-in types
 
@@ -139,9 +144,9 @@ export async function PATCH(request: NextRequest) {
       email: user.email,
       name: user.name,
       mobile_number: user.phone || "",
-      date: dayjs(updatedRequest.startDateTime).format("DD/MM/YYYY"),
-      startDateTime: dayjs(updatedRequest.startDateTime).format("HH:mm"),
-      endDateTime: dayjs(updatedRequest.endDateTime).format("HH:mm"),
+      date: dayjs(updatedRequest.startDateTime).tz('Asia/Jakarta').format("DD/MM/YYYY"),
+      startDateTime: dayjs(updatedRequest.startDateTime).tz('Asia/Jakarta').format("HH:mm"),
+      endDateTime: dayjs(updatedRequest.endDateTime).tz('Asia/Jakarta').format("HH:mm"),
       destination: updatedRequest.destination,
       vehicleName: vehicle?.name || "",
       vehiclePlate: vehicle?.plate || "",

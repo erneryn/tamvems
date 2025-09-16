@@ -3,6 +3,11 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import * as XLSX from "xlsx";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 export async function GET(request: NextRequest) {
   try {
@@ -90,19 +95,19 @@ export async function GET(request: NextRequest) {
       'Plat Nomor': request.vehicle.plate,
       'Jenis Kendaraan': request.vehicle.type,
       'Tujuan': request.destination,
-      'Tanggal Mulai': dayjs(request.startDateTime).format('DD/MM/YYYY'),
-      'Waktu Mulai': dayjs(request.startDateTime).format('HH:mm'),
-      'Tanggal Selesai': dayjs(request.endDateTime).format('DD/MM/YYYY'),
-      'Waktu Selesai': dayjs(request.endDateTime).format('HH:mm'),
+      'Tanggal Mulai': dayjs(request.startDateTime).tz('Asia/Jakarta').format('DD/MM/YYYY'),
+      'Waktu Mulai': dayjs(request.startDateTime).tz('Asia/Jakarta').format('HH:mm'),
+      'Tanggal Selesai': dayjs(request.endDateTime).tz('Asia/Jakarta').format('DD/MM/YYYY'),
+      'Waktu Selesai': dayjs(request.endDateTime).tz('Asia/Jakarta').format('HH:mm'),
       'Status': request.status,
-      'Tanggal Disetujui': request.approvedAt ? dayjs(request.approvedAt).format('DD/MM/YYYY HH:mm') : '-',
-      'Tanggal Ditolak': request.rejectedAt ? dayjs(request.rejectedAt).format('DD/MM/YYYY HH:mm') : '-',
+      'Tanggal Disetujui': request.approvedAt ? dayjs(request.approvedAt).tz('Asia/Jakarta').format('DD/MM/YYYY HH:mm') : '-',
+      'Tanggal Ditolak': request.rejectedAt ? dayjs(request.rejectedAt).tz('Asia/Jakarta').format('DD/MM/YYYY HH:mm') : '-',
       'Alasan Penolakan': request.rejectionReason || '-',
-      'Tanggal Check Out': request.checkOutAt ? dayjs(request.checkOutAt).format('DD/MM/YYYY HH:mm') : '-',
+      'Tanggal Check Out': request.checkOutAt ? dayjs(request.checkOutAt).tz('Asia/Jakarta').format('DD/MM/YYYY HH:mm') : '-',
       'Dibuat Oleh': request.createdBy.name,
       'NIP Pembuat': request.createdBy.employeeId,
-      'Tanggal Dibuat': dayjs(request.createdAt).format('DD/MM/YYYY HH:mm'),
-      'Terakhir Diupdate': dayjs(request.updatedAt).format('DD/MM/YYYY HH:mm'),
+      'Tanggal Dibuat': dayjs(request.createdAt).tz('Asia/Jakarta').format('DD/MM/YYYY HH:mm'),
+      'Terakhir Diupdate': dayjs(request.updatedAt).tz('Asia/Jakarta').format('DD/MM/YYYY HH:mm'),
     }));
 
     // Create workbook and worksheet
@@ -148,7 +153,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Create filename with timestamp and date range
-    const timestamp = dayjs().format('YYYYMMDD_HHmmss');
+    const timestamp = dayjs().tz('Asia/Jakarta').format('YYYYMMDD_HHmmss');
     let filename = `laporan_pengajuan_kendaraan_${timestamp}`;
     
     if (startDate && endDate) {
