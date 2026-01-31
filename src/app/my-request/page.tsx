@@ -12,6 +12,7 @@ interface UserRequest extends VehicleRequest {
     name: string;
     plate: string;
     image: string;
+    description?: string | null;
   };
 }
 
@@ -150,6 +151,7 @@ export default function PengajuanSaya() {
                   key={request.id} 
                   title={request.vehicle.name}
                   plate={request.vehicle.plate}
+                  description={request.vehicle.description ?? undefined}
                   image={request.vehicle.image || '/default-car.png'}
                   requestDate={request.startDateTime}
                   requestTime={dayjs(request.startDateTime).format("HH:mm")}

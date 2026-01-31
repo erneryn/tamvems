@@ -4,7 +4,6 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { HiTruck, HiInformationCircle, HiUpload, HiX } from "react-icons/hi";
 import Image from "next/image";
-
 const vehicleTypes = [
   { value: "BENSIN", label: "Bensin" },
   { value: "DIESEL", label: "Diesel" },
@@ -252,6 +251,23 @@ export default function VehicleRegisterForm() {
           </select>
           <p className="mt-1 text-xs text-gray-500">
             Tahun pembuatan atau registrasi kendaraan
+          </p>
+        </div>
+
+        {/* Description */}
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+            Deskripsi <span className="text-gray-400 font-normal">(opsional)</span>
+          </label>
+          <textarea
+            id="description"
+            name="description"
+            rows={4}
+            placeholder="Tambahkan deskripsi kendaraan (opsional)..."
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-y min-h-[100px]"
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Deskripsi singkat atau catatan tentang kendaraan
           </p>
         </div>
 

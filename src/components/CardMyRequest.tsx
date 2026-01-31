@@ -17,6 +17,7 @@ const InfoStatus: Record<string, string> = {
 export default function Card({
   title,
   plate,
+  description,
   requestDate,
   requestTime,
   returnTime,
@@ -29,6 +30,7 @@ export default function Card({
 }: {
   title: string;
   plate: string;
+  description?: string | null;
   requestDate: Date | null;
   requestTime: string;
   returnTime: string;
@@ -87,6 +89,13 @@ export default function Card({
               <span className="text-sm text-gray-500">{plate}</span>
             </div>
           </div>
+
+          {description?.trim() && (
+            <div className="p-1 border-b-2 border-gray-300">
+              <h1 className="text-sm font-bold">Deskripsi</h1>
+              <span className="text-sm text-gray-500 whitespace-pre-wrap">{description}</span>
+            </div>
+          )}
 
           <div className="p-1 border-b-2 border-gray-300">
             <h1 className="text-sm font-bold">Tanggal Pengajuan</h1>

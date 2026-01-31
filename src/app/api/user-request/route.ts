@@ -46,6 +46,7 @@ export async function GET(request: NextRequest) {
           name: true,
           plate: true,
           image: true,
+          description: true,
         },
       },
     },

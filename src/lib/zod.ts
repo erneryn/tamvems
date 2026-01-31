@@ -60,6 +60,7 @@ export const vehicleRegisterSchema = object({
   year: string({message: "Year is required"})
     .min(4, "Year must be at least 4 characters")
     .max(4, "Year must be 4 characters"),
+  description: string().max(2000, "Description must be less than 2000 characters").optional(),
 })
 
 export const profileUpdateSchema = object({

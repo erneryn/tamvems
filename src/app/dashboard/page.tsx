@@ -203,11 +203,13 @@ export default function Dashboard() {
                   plate={vehicle.plate}
                   year={vehicle.year}
                   description={vehicle.type}
+                  vehicleDescription={vehicle.description ?? undefined}
                   isAvailable={vehicle.isAvailable}
                   image={vehicle.image || "/default-car.png"}
                   bookings={vehicle.bookings}
                   onClick={() => handleUseClick(vehicle.id)}
                   isOverlapping={vehicle.isOverlapping || false}
+                  pendingCount={vehicle.pendingCount}
                 />
               ))}
             {vehicles.length === 0 && (

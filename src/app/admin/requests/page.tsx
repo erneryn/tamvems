@@ -15,7 +15,7 @@ import {
   Select,
   Pagination,
 } from "flowbite-react";
-import { HiClipboardList, HiChevronUp, HiChevronDown, HiPhone } from "react-icons/hi";
+import { HiClipboardList, HiChevronUp, HiChevronDown, HiPhone, HiDocumentText, HiPhotograph } from "react-icons/hi";
 import { VehicleRequest, User, Vehicle, RequestStatus } from "@prisma/client";
 import dayjs from "dayjs";
 import ConfirmationModal from "@/components/ConfirmationModal";
@@ -255,6 +255,38 @@ function AdminRequestsContent() {
     );
   };
 
+  // Check if document URL is a PDF
+  const isPdfDocument = (url: string | null | undefined): boolean => {
+    if (!url) return false;
+    return url.toLowerCase().includes('.pdf') || url.toLowerCase().includes('/raw/');
+  };
+
+  // Render document link
+  const renderDocumentLink = (request: RequestData) => {
+    if (!request.documentUrl) {
+      return <span className="text-gray-400">—</span>;
+    }
+
+    const isPdf = isPdfDocument(request.documentUrl);
+    
+    return (
+      <a
+        href={request.documentUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center text-blue-600 hover:text-blue-800 hover:underline"
+        title={isPdf ? "Lihat PDF" : "Lihat Gambar"}
+      >
+        {isPdf ? (
+          <HiDocumentText className="w-5 h-5" />
+        ) : (
+          <HiPhotograph className="w-5 h-5" />
+        )}
+        <span className="ml-1 text-xs">Lihat</span>
+      </a>
+    );
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -304,8 +336,14 @@ function AdminRequestsContent() {
                     <TableHeadCell scope="col" className="px-6 py-3">
                       Kendaraan
                     </TableHeadCell>
+                    <TableHeadCell scope="col" className="px-6 py-3 max-w-[200px]">
+                      Deskripsi
+                    </TableHeadCell>
                     <TableHeadCell scope="col" className="px-6 py-3">
                       Tujuan
+                    </TableHeadCell>
+                    <TableHeadCell scope="col" className="px-6 py-3">
+                      Dokumen
                     </TableHeadCell>
                     <TableHeadCell
                       scope="col"
@@ -366,8 +404,16 @@ function AdminRequestsContent() {
                             </div>
                           </div>
                         </TableCell>
+                        <TableCell className="px-6 py-4 max-w-[200px]">
+                          <span className="line-clamp-1 text-sm text-gray-600" title={request.vehicle.description ?? undefined}>
+                            {request.vehicle.description?.trim() || "—"}
+                          </span>
+                        </TableCell>
                         <TableCell className="px-6 py-4 text-sm text-gray-900">
                           {request.destination}
+                        </TableCell>
+                        <TableCell className="px-6 py-4 text-sm text-gray-900">
+                          {renderDocumentLink(request)}
                         </TableCell>
                         <TableCell className="px-6 py-4 text-sm text-gray-900">
                           {dayjs(request.startDateTime).format(
@@ -410,7 +456,7 @@ function AdminRequestsContent() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={7} className="px-6 py-8 text-center">
+                      <TableCell colSpan={9} className="px-6 py-8 text-center">
                         <div className="flex flex-col items-center space-y-2">
                           <HiClipboardList className="h-12 w-12 text-gray-300" />
                           <p className="text-gray-500">

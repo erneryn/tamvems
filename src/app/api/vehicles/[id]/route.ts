@@ -57,6 +57,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const contentType = request.headers.get('content-type') || '';
     let name: string, plate: string, type: VehicleType, year: string, image: string | null = null;
 
+    let description: string | null = null;
+
     if (contentType.includes('multipart/form-data')) {
       // Handle FormData (file upload)
       const formData = await request.formData();
@@ -64,6 +66,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       plate = formData.get('plate') as string;
       type = (formData.get('type') as string).toUpperCase() as VehicleType;
       year = formData.get('year') as string;
+      const desc = formData.get('description') as string | null;
+      description = desc?.trim() || null;
       const imageFile = formData.get('image') as File | null;
       
       // Upload new image if provided
@@ -77,6 +81,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       plate = body.plate;
       type = body.type;
       year = body.year;
+      description = body.description?.trim() ?? null;
       image = body.image;
     }
 
@@ -86,12 +91,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       plate: string;
       type: VehicleType;
       year: string;
+      description?: string | null;
       image?: string;
     } = {
       name,
       plate: plate.toUpperCase().trim(),
       type,
       year,
+      description,
     };
 
     // Only update image if a new one was provided

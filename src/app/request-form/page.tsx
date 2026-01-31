@@ -4,16 +4,21 @@ import {
   Label,
   TextInput,
   ToastToggle,
+  FileInput,
 } from "flowbite-react";
 import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useRef } from "react";
 import { Vehicle } from "@prisma/client";
 import Loading from "@/components/Loading";
 import { useSession } from "next-auth/react";
 import { Toast } from "flowbite-react";
-import { HiCheck } from "react-icons/hi";
+import { HiCheck, HiX, HiDocumentText } from "react-icons/hi";
 import dayjs from "dayjs";
+
+// Constants for file validation
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_FILE_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
 
 // Interface for API error responses
 interface ApiErrorResponse {
@@ -36,9 +41,64 @@ function PengajuanContent() {
   const [errorMessage, setErrorMessage] = useState("Terjadi kesalahan saat mengirim pengajuan. Silakan coba lagi.");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [countdown, setCountdown] = useState(4);
+  const [documentFile, setDocumentFile] = useState<File | null>(null);
+  const [documentPreview, setDocumentPreview] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const session = useSession();
   const user = session.data?.user;
+
+  // Handle file selection
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setFileError(null);
+
+    if (!file) {
+      setDocumentFile(null);
+      setDocumentPreview(null);
+      return;
+    }
+
+    // Validate file type
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      setFileError("Tipe file tidak valid. Gunakan PDF, JPEG, atau PNG.");
+      setDocumentFile(null);
+      setDocumentPreview(null);
+      return;
+    }
+
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      setFileError("Ukuran file terlalu besar. Maksimal 5MB.");
+      setDocumentFile(null);
+      setDocumentPreview(null);
+      return;
+    }
+
+    setDocumentFile(file);
+
+    // Create preview for images
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setDocumentPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setDocumentPreview(null);
+    }
+  };
+
+  // Remove selected file
+  const handleRemoveFile = () => {
+    setDocumentFile(null);
+    setDocumentPreview(null);
+    setFileError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   useEffect(() => {
     const fetchVehicle = async () => {
@@ -74,19 +134,22 @@ function PengajuanContent() {
     setIsError(false);
 
     try {
+      // Use FormData to support file upload
+      const formData = new FormData();
+      formData.append('vehicleId', vehicleId || '');
+      formData.append('destination', keperluan);
+      formData.append('startDate', requestDate || '');
+      formData.append('endDate', requestDate || '');
+      formData.append('startTime', requestStartTime || '');
+      formData.append('endTime', requestEndTime || '');
+      
+      if (documentFile) {
+        formData.append('document', documentFile);
+      }
+
       const res = await fetch("/api/request", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          vehicleId,
-          destination: keperluan,
-          startDate: requestDate,
-          endDate: requestDate,
-          startTime: requestStartTime,
-          endTime: requestEndTime,
-        }),
+        body: formData,
       });
 
       if (res.ok) {
@@ -179,6 +242,12 @@ function PengajuanContent() {
                   {requestStartTime}:00 - {requestEndTime}:00
                 </span>
               </div>
+              {vehicle.description?.trim() && (
+                <div className="p-2 border-b-2  border-gray-300">
+                  <h1 className="text-lg font-bold">Deskripsi</h1>
+                  <span className="text-xl text-gray-500 whitespace-pre-wrap">{vehicle.description}</span>
+                </div>
+              )}
             </div>
           </div>
           <div className="w-full flex justify-center">
@@ -211,9 +280,62 @@ function PengajuanContent() {
                   shadow
                 />
               </div>
+              <div>
+                <div className="mb-2 block">
+                  <Label htmlFor="document">Dokumen Surat Tugas (Wajib)</Label>
+                </div>
+                <FileInput
+                  id="document"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={handleFileChange}
+                  ref={fileInputRef}
+                  color={fileError ? "failure" : undefined}
+                />
+                <p className="mt-1 text-xs text-gray-500">Wajib. PDF, JPEG, atau PNG. Maks 5MB.</p>
+                {fileError && (
+                  <p className="mt-1 text-sm text-red-600">{fileError}</p>
+                )}
+                {documentFile && (
+                  <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        {documentPreview ? (
+                          <div className="relative w-16 h-16 rounded overflow-hidden">
+                            <Image
+                              src={documentPreview}
+                              alt="Preview"
+                              fill
+                              style={{ objectFit: "cover" }}
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-12 h-12 bg-red-100 rounded flex items-center justify-center">
+                            <HiDocumentText className="w-6 h-6 text-red-600" />
+                          </div>
+                        )}
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 truncate max-w-[200px]">
+                            {documentFile.name}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {(documentFile.size / 1024 / 1024).toFixed(2)} MB
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleRemoveFile}
+                        className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+                      >
+                        <HiX className="w-5 h-5 text-gray-500" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
               <Button
                 type="submit"
-                disabled={keperluan === "" || isSubmitting}
+                disabled={keperluan === "" || isSubmitting || !!fileError || !documentFile}
               >
                 {isSubmitting ? "Mengirim..." : "Submit Pengajuan"}
               </Button>

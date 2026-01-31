@@ -23,8 +23,9 @@ const parseFormData = (formData: FormData) => {
   const plate = formData.get('plate') as string
   const type = formData.get('type') as VehicleType
   const year = formData.get('year') as string
+  const description = formData.get('description') as string | null
   const image = formData.get('image') as File
-  return { name, plate, type: type?.toUpperCase() as VehicleType, year, image }
+  return { name, plate, type: type?.toUpperCase() as VehicleType, year, description, image }
 }
 
 
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
   try {
     // Parse request body
     const formData = await request.formData()
-    const { name, plate, type, year, image } = parseFormData(formData)
+    const { name, plate, type, year, description, image } = parseFormData(formData)
     
     // Validate input with Zod schema
     vehicleRegisterSchema.parse({
@@ -67,6 +68,7 @@ export async function POST(request: NextRequest) {
       plate,
       type,
       year,
+      description: description || undefined,
     })
     
     // Check if vehicle with same license plate already exists
@@ -94,6 +96,7 @@ export async function POST(request: NextRequest) {
         plate: plate.toUpperCase().trim(),
         type,
         year,
+        description: description?.trim() || null,
         image : imageUrl,
         isActive: true,
       },
@@ -103,6 +106,7 @@ export async function POST(request: NextRequest) {
         plate: true,
         type: true,
         year: true,
+        description: true,
         image: true,
         isActive: true,
         createdAt: true,
@@ -179,6 +183,7 @@ export async function GET() {
         plate: true,
         type: true,
         year: true,
+        description: true,
         image: true,
         isActive: true,
         createdAt: true,

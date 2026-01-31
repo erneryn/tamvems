@@ -291,6 +291,7 @@ export default function AdminDashboard() {
                   <th scope="col" className="px-6 py-3">Nama</th>
                   <th scope="col" className="px-6 py-3">Kendaraan</th>
                   <th scope="col" className="px-6 py-3">Plat Nomor</th>
+                  <th scope="col" className="px-6 py-3 max-w-[160px]">Deskripsi</th>
                   <th scope="col" className="px-6 py-3">Tanggal</th>
                   <th scope="col" className="px-6 py-3">Waktu</th>
                   <th scope="col" className="px-6 py-3">Tujuan</th>
@@ -305,6 +306,11 @@ export default function AdminDashboard() {
                     </td>
                     <td className="px-6 py-4">{request.vehicle.name}</td>
                     <td className="px-6 py-4">{request.vehicle.plate}</td>
+                    <td className="px-6 py-4 max-w-[160px]">
+                      <span className="line-clamp-1 text-sm text-gray-600" title={request.vehicle.description ?? undefined}>
+                        {request.vehicle.description?.trim() || "—"}
+                      </span>
+                    </td>
                     <td className="px-6 py-4">{dayjs(request.startDateTime).format("DD-MM-YYYY")}</td>
                     <td className="px-6 py-4">{dayjs(request.startDateTime).format("HH:mm")} - {dayjs(request.endDateTime).format("HH:mm")}</td>
                     <td className="px-6 py-4">{request.destination}</td>
@@ -321,7 +327,7 @@ export default function AdminDashboard() {
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan={7} className="text-center">
+                    <td colSpan={8} className="text-center">
                       Tidak ada pengajuan terbaru
                     </td>
                   </tr>
@@ -342,6 +348,7 @@ export default function AdminDashboard() {
                   <TableHeadCell scope="col" className="px-6 py-3">Nama</TableHeadCell>
                   <TableHeadCell scope="col" className="px-6 py-3">Kendaraan</TableHeadCell>
                   <TableHeadCell scope="col" className="px-6 py-3">Plat Nomor</TableHeadCell>
+                  <TableHeadCell scope="col" className="px-6 py-3 max-w-[200px]">Deskripsi</TableHeadCell>
                   <TableHeadCell scope="col" className="px-6 py-3">Waktu</TableHeadCell>
                   <TableHeadCell scope="col" className="px-6 py-3">Tujuan</TableHeadCell>
                   <TableHeadCell scope="col" className="px-6 py-3"></TableHeadCell>
@@ -355,6 +362,11 @@ export default function AdminDashboard() {
                     </TableCell>
                     <TableCell className="px-6 py-4">{request.vehicle.name}</TableCell>
                     <TableCell className="px-6 py-4">{request.vehicle.plate}</TableCell>
+                    <TableCell className="px-6 py-4 max-w-[200px]">
+                      <span className="line-clamp-1 text-sm text-gray-600" title={request.vehicle.description ?? undefined}>
+                        {request.vehicle.description?.trim() || "—"}
+                      </span>
+                    </TableCell>
                     <TableCell className="px-6 py-4">{dayjs(request.startDateTime).format("HH:mm")} - {dayjs(request.endDateTime).format("HH:mm")}</TableCell>
                     <TableCell className="px-6 py-4 w-sm">{request.destination}</TableCell>
                     <TableCell className="px-6 py-4 min-w-40">
@@ -363,7 +375,7 @@ export default function AdminDashboard() {
                   </TableRow>
                 )) : (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center">
+                    <TableCell colSpan={7} className="text-center">
                       Tidak ada kendaraan keluar hari ini
                     </TableCell>
                   </TableRow>

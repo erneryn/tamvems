@@ -99,6 +99,11 @@ export default function CheckOutModal({
                 <p className="text-xs text-gray-500">
                   {selectedRequest.vehicle.type} • {selectedRequest.vehicle.year}
                 </p>
+                {selectedRequest.vehicle.description?.trim() && (
+                  <p className="text-xs text-gray-600 mt-1 whitespace-pre-wrap">
+                    {selectedRequest.vehicle.description}
+                  </p>
+                )}
               </div>
             </div>
 

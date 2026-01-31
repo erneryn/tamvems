@@ -35,6 +35,7 @@ interface Vehicle {
   plate: string;
   type: "BENSIN" | "DIESEL" | "ELECTRIC";
   year: string;
+  description: string | null;
   image: string | null;
   isActive: boolean;
   createdAt: string;
@@ -86,7 +87,8 @@ function AdminVehiclesContent() {
     (vehicle) =>
       vehicle.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       vehicle.plate.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      vehicle.year.includes(searchTerm)
+      vehicle.year.includes(searchTerm) ||
+      (vehicle.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false)
   );
 
   return (
@@ -180,6 +182,9 @@ function AdminVehiclesContent() {
                   <TableHeadCell scope="col" className="px-6 py-3">
                     Tahun
                   </TableHeadCell>
+                  <TableHeadCell scope="col" className="px-6 py-3 max-w-[200px]">
+                    Deskripsi
+                  </TableHeadCell>
                   <TableHeadCell scope="col" className="px-6 py-3">
                     Status
                   </TableHeadCell>
@@ -192,7 +197,7 @@ function AdminVehiclesContent() {
                 {filteredVehicles.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={8}
+                      colSpan={9}
                       className="text-center py-10 text-gray-500"
                     >
                       {searchTerm
@@ -236,6 +241,11 @@ function AdminVehiclesContent() {
                           </Badge>
                       </TableCell>
                       <TableCell>{vehicle.year}</TableCell>
+                      <TableCell className="max-w-[200px]">
+                        <span className="line-clamp-2 text-sm text-gray-600" title={vehicle.description ?? undefined}>
+                          {vehicle.description?.trim() || "—"}
+                        </span>
+                      </TableCell>
                       <TableCell>
                         <Badge color={vehicle.isActive ? "success" : "gray"} className="flex items-center justify-center">
                           {vehicle.isActive ? "Aktif" : "Nonaktif"}

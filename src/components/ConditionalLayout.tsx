@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Header from './Header';
 import Footer from './Footer';
@@ -10,14 +11,30 @@ interface ConditionalLayoutProps {
 
 export default function ConditionalLayout({ children }: ConditionalLayoutProps) {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Same output on server and first client render to avoid hydration mismatch
+  if (!mounted) {
+    return (
+      <>
+        <Header isUserRoute={false} />
+        {children}
+        <Footer />
+      </>
+    );
+  }
+
   const isAdminRoute = pathname?.startsWith('/admin');
-  const isUserRoute = ['/dashboard', '/my-request', '/request-form','/profile'].includes(pathname || '');
+  const isUserRoute = ['/dashboard', '/my-request', '/request-form', '/profile'].includes(pathname || '');
+
   if (isAdminRoute) {
-    // For admin routes, only render children without header/footer
     return <>{children}</>;
   }
 
-  // For non-admin routes, render with header and footer
   return (
     <>
       <Header isUserRoute={isUserRoute} />

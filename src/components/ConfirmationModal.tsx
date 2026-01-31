@@ -1,15 +1,22 @@
 "use client";
 
 import { Button, TextInput } from "flowbite-react";
-import { HiX } from "react-icons/hi";
+import { HiX, HiDocumentText, HiExternalLink } from "react-icons/hi";
 import { VehicleRequest, User, Vehicle } from "@prisma/client";
 import dayjs from "dayjs";
 import { useState } from "react";
+import Image from "next/image";
 
 interface RequestData extends VehicleRequest {
   user: User;
   vehicle: Vehicle;
 }
+
+// Check if document URL is a PDF
+const isPdfDocument = (url: string | null | undefined): boolean => {
+  if (!url) return false;
+  return url.toLowerCase().includes('.pdf') || url.toLowerCase().includes('/raw/');
+};
 
 export default function ConfirmationModal({
   handleCancel,
@@ -35,7 +42,7 @@ export default function ConfirmationModal({
         <div className="fixed inset-0 " onClick={handleCancel}>
           <div className="fixed inset-0 bg-black opacity-50"></div>
         </div>
-        <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div className={`relative bg-white rounded-lg shadow-xl w-full mx-4 ${selectedRequest.documentUrl && isPdfDocument(selectedRequest.documentUrl) ? 'max-w-4xl' : 'max-w-md'}`}>
           {/* Modal Header */}
           <div className="flex items-center justify-between p-6 border-b">
             <h3 className="text-lg font-semibold text-gray-900">
@@ -88,6 +95,46 @@ export default function ConfirmationModal({
                       {dayjs(selectedRequest.startDateTime).format("HH:mm")} -{" "}
                       {dayjs(selectedRequest.endDateTime).format("HH:mm")}
                     </p>
+                    {selectedRequest.vehicle.description?.trim() && (
+                      <p>
+                        <strong>Deskripsi:</strong> {selectedRequest.vehicle.description}
+                      </p>
+                    )}
+                    {selectedRequest.documentUrl && (
+                      <div className="pt-2 border-t border-gray-200 mt-2">
+                        <div className="flex items-center justify-between mb-2">
+                          <strong>Dokumen Surat Tugas:</strong>
+                          <a
+                            href={selectedRequest.documentUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                          >
+                            Buka di tab baru
+                            <HiExternalLink className="w-4 h-4 ml-1" />
+                          </a>
+                        </div>
+                        {isPdfDocument(selectedRequest.documentUrl) ? (
+                          <div className="w-full rounded-lg overflow-hidden border border-gray-200 bg-gray-100">
+                            <iframe
+                              src={`https://docs.google.com/viewer?url=${encodeURIComponent(selectedRequest.documentUrl)}&embedded=true`}
+                              className="w-full h-[400px]"
+                              title="Dokumen Surat Tugas PDF"
+                              frameBorder="0"
+                            />
+                          </div>
+                        ) : (
+                          <div className="relative w-full h-40 rounded-lg overflow-hidden border border-gray-200">
+                            <Image
+                              src={selectedRequest.documentUrl}
+                              alt="Dokumen Surat Tugas"
+                              fill
+                              style={{ objectFit: "contain" }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </>

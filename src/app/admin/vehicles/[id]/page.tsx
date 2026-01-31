@@ -32,6 +32,7 @@ interface Vehicle {
   plate: string;
   type: "BENSIN" | "DIESEL" | "ELECTRIC";
   year: string;
+  description: string | null;
   image: string | null;
   isActive: boolean;
   createdAt: string;
@@ -65,6 +66,7 @@ export default function VehicleDetailPage() {
     plate: "",
     type: "BENSIN" as "BENSIN" | "DIESEL" | "ELECTRIC",
     year: "",
+    description: "",
   });
 
   // Fetch vehicle data
@@ -82,6 +84,7 @@ export default function VehicleDetailPage() {
           plate: vehicleData.plate,
           type: vehicleData.type,
           year: vehicleData.year,
+          description: vehicleData.description ?? "",
         });
       } catch (err) {
         setError(
@@ -98,7 +101,7 @@ export default function VehicleDetailPage() {
   }, [vehicleId]);
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -162,6 +165,7 @@ export default function VehicleDetailPage() {
         formDataToSend.append('plate', formData.plate);
         formDataToSend.append('type', formData.type);
         formDataToSend.append('year', formData.year);
+        if (formData.description) formDataToSend.append('description', formData.description);
         formDataToSend.append('image', selectedFile);
         requestBody = formDataToSend;
       } else {
@@ -169,6 +173,7 @@ export default function VehicleDetailPage() {
         headers['Content-Type'] = 'application/json';
         requestBody = JSON.stringify({
           ...formData,
+          description: formData.description?.trim() || null,
           image: null // Don't update image if no new file
         });
       }
@@ -369,6 +374,19 @@ export default function VehicleDetailPage() {
               />
             </div>
 
+            <div>
+              <Label htmlFor="description">Deskripsi (opsional)</Label>
+              <textarea
+                id="description"
+                name="description"
+                rows={4}
+                value={formData.description}
+                onChange={handleInputChange}
+                placeholder="Tambahkan deskripsi kendaraan..."
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-y min-h-[100px]"
+              />
+            </div>
+
             {/* Vehicle Image Upload */}
             <div>
               <Label className="block text-sm font-medium text-gray-700 mb-2">
@@ -474,6 +492,12 @@ export default function VehicleDetailPage() {
               {vehicle?.createdAt && new Date(vehicle.createdAt).toLocaleString('id-ID')}
             </p>
           </div>
+          {(vehicle?.description ?? "").trim() && (
+            <div className="md:col-span-2">
+              <p className="text-sm text-gray-500">Deskripsi</p>
+              <p className="text-sm text-gray-700 whitespace-pre-wrap mt-1">{vehicle?.description}</p>
+            </div>
+          )}
         </div>
       </Card>
 

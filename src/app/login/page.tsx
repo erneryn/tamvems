@@ -19,6 +19,7 @@ export default function Login() {
   const [rememberMe, setRememberMe] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
 
   // Load remembered credentials on component mount
   useEffect(() => {
@@ -205,12 +206,13 @@ export default function Login() {
                   />
                   <span className="ml-2 text-sm text-gray-600">Ingat saya</span>
                 </label>
-                <Link 
-                  href="/forgot-password" 
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPasswordModal(true)}
                   className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
                 >
                   Lupa password?
-                </Link>
+                </button>
               </div>
 
               <button
@@ -230,7 +232,7 @@ export default function Login() {
             </form>
 
             <div className="mt-8 pt-6 border-t border-gray-200">
-              <p className="text-center text-sm text-gray-600">
+              {/* <p className="text-center text-sm text-gray-600">
                 Belum memiliki akun?{" "}
                 <Link 
                   href="/register" 
@@ -238,19 +240,19 @@ export default function Login() {
                 >
                   Ajukan Pendaftaran sekarang
                 </Link>
-              </p>
+              </p> */}
             </div>
 
             <div className="mt-6 text-center">
               <p className="text-xs text-gray-500">
                 Dengan masuk, Anda menyetujui{" "}
-                <Link href="/terms" className="text-blue-600 hover:underline">
+                {/* <Link href="/terms" className="text-blue-600 hover:underline"> */}
                   Syarat & Ketentuan
-                </Link>{" "}
+                {/* </Link>{" "} */}
                 dan{" "}
-                <Link href="/privacy" className="text-blue-600 hover:underline">
+                {/* <Link href="/privacy" className="text-blue-600 hover:underline"> */}
                   Kebijakan Privasi
-                </Link>
+                {/* </Link> */}
               </p>
             </div>
           </div>
@@ -258,16 +260,41 @@ export default function Login() {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">
               Butuh bantuan?{" "}
-              <Link 
-                href="/contact" 
-                className="text-blue-600 hover:text-blue-700 transition-colors"
-              >
+              <button
+                  type="button"
+                  onClick={() => setShowForgotPasswordModal(true)}
+                  className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
+                >
                 Hubungi support
-              </Link>
+              </button>
             </p>
           </div>
         </div>
       </div>
+
+      {/* Forgot password modal */}
+      {showForgotPasswordModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setShowForgotPasswordModal(false)}
+            aria-hidden
+          />
+          <div className="relative bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">Lupa password?</h3>
+            <p className="text-gray-600 mb-6">
+              Silahkan hubungi admin untuk mendapatkan password anda
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowForgotPasswordModal(false)}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

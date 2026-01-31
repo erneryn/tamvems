@@ -29,7 +29,7 @@ export default function Footer() {
             </ul>
           </div>
           
-          <div>
+          {/* <div>
             <h4 className="font-semibold mb-4">Resources</h4>
             <ul className="space-y-2">
               <li>
@@ -48,7 +48,7 @@ export default function Footer() {
                 </a>
               </li>
             </ul>
-          </div>
+          </div> */}
         </div>
         
         <div className="border-t border-gray-800 mt-8 pt-8 text-center">

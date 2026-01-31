@@ -7,6 +7,7 @@ export default function Card({
   title,
   plate,
   description,
+  vehicleDescription,
   isAvailable,
   year,
   image,
@@ -14,11 +15,13 @@ export default function Card({
   onClick,
   bookings,
   isOverlapping,
+  pendingCount = 0,
 }: {
   id: string;
   title: string;
   plate: string;
   description: string;
+  vehicleDescription?: string | null;
   isAvailable: boolean;
   isOverlapping: boolean;
   year: string;
@@ -29,6 +32,7 @@ export default function Card({
     startDateTime: string;
     endDateTime: string;
   }[];
+  pendingCount?: number;
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -54,6 +58,11 @@ export default function Card({
         <p className="font-normal text-gray-700">
           Tahun: <span className="font-bold ">{year}</span>
         </p>
+        {vehicleDescription?.trim() && (
+          <p className="font-normal text-gray-700 line-clamp-2" title={vehicleDescription}>
+            Deskripsi: <span className="font-bold ">{vehicleDescription}</span>
+          </p>
+        )}
       </div>
       {!isAvailable ? (
         <span className="text-sm text-gray-500">
@@ -78,7 +87,12 @@ export default function Card({
             Belum Kembali
           </span>
         )}
-        {isAvailable ? (
+        {pendingCount > 0 && (
+          <span className="ml-3 mr-2 rounded bg-orange-400 px-5 py-1 text-xs font-semibold text-white ">
+            {pendingCount} User Sedang Dalam Pengajuan
+          </span>
+        )}
+        {isAvailable && pendingCount === 0 ? (
           <span className="ml-3 mr-2 rounded bg-green-400 px-5 py-1 text-xs font-semibold text-white ">
             Tersedia Sekarang
           </span>
