@@ -97,7 +97,7 @@ export default function Card({
             Tersedia Sekarang
           </span>
         ) : (
-          bookings.length &&
+          bookings.length > 0 &&
           bookings.map((booking, index) => (
             <span
               key={index}
