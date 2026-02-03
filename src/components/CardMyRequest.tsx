@@ -1,20 +1,12 @@
+"use client";
+
 import dayjs from "dayjs";
 import { Button } from "flowbite-react";
 import Image from "next/image";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/lib/translations";
 
-const InfoStatus: Record<string, string> = {
-  "PENDING": "Dalam proses pengajuan kepada admin",
-  "APPROVED":
-    "Mohon gunakan kendaraan sesuai dengan waktu yang telah ditentukan",
-  "WAITING":
-    "Pengajuan anda telah disetujui, namun sampai saat ini kendaraan masih digunakan oleh pengguna lain",
-  "COMPLETED":
-    "Kendaraan sudah dikembalikan",
-  "CANCELLED":
-    "Pengajuan anda telah dibatalkan",
-};
-
-export default function Card({
+export default function CardMyRequest({
   title,
   plate,
   description,
@@ -24,7 +16,6 @@ export default function Card({
   status,
   image,
   isIdle = true,
-  checkOutAt,
   buttonStatus,
   rejectionReason,
 }: {
@@ -41,80 +32,90 @@ export default function Card({
   buttonStatus?: string | null;
   rejectionReason?: string | null;
 }) {
-  const getInfoStatus = (isIdle: boolean, status: string) => {
-    if (status === "APPROVED" && !isIdle) {
-      return InfoStatus["WAITING"];
-    }
-    return InfoStatus[status?.toUpperCase()] || "";
+  const { locale } = useLanguage();
+  const t = translations[locale].components.cardMyRequest;
+
+  const getInfoStatus = (idle: boolean, st: string) => {
+    if (st === "APPROVED" && !idle) return t.statusWaiting;
+    const key = st?.toUpperCase();
+    if (key === "PENDING") return t.statusPending;
+    if (key === "APPROVED") return t.statusApproved;
+    if (key === "WAITING") return t.statusWaiting;
+    if (key === "COMPLETED") return t.statusCompleted;
+    if (key === "CANCELLED") return t.statusCancelled;
+    return "";
   };
 
   const generateButtonCheckout = () => {
-    if(buttonStatus === "warning") {
-      return <>
-      <span className="text-sm text-gray-500">
-        Kendaraan sudah melebihi Hari yang telah ditentukan
-      </span>
-      <Button pill  className="px-5 bg-red-500 text-white">
-        Check Out
-      </Button>
-      </>
+    if (buttonStatus === "warning") {
+      return (
+        <>
+          <span className="text-sm text-gray-500">{t.overDay}</span>
+          <Button pill className="px-5 bg-red-500 text-white">
+            {t.checkOut}
+          </Button>
+        </>
+      );
     }
-    if(buttonStatus === "overTime") {
-      return <>
-      <span className="text-sm text-gray-500">
-        Kendaraan sudah melebihi jam yang telah ditentukan
-      </span>
-      <Button pill  className="px-5 bg-yellow-500 text-white">
-        Check Out
-      </Button>
-      </>
+    if (buttonStatus === "overTime") {
+      return (
+        <>
+          <span className="text-sm text-gray-500">{t.overTime}</span>
+          <Button pill className="px-5 bg-yellow-500 text-white">
+            {t.checkOut}
+          </Button>
+        </>
+      );
     }
-    if(buttonStatus === "onTime") {
-      return <Button pill  className="px-5 bg-green-500 text-white">
-        Check Out
-      </Button>
+    if (buttonStatus === "onTime") {
+      return (
+        <Button pill className="px-5 bg-green-500 text-white">
+          {t.checkOut}
+        </Button>
+      );
     }
-  }
+  };
+
   return (
     <div className="w-full max-w-4xl flex flex-col md:flex-row gap-4 bg-gray-100 rounded-lg p-4">
       <div className="w-full md:w-1/2">
         <div className="flex flex-col w-full">
           <div className="p-1 border-b-2 border-gray-300 flex flex-col sm:flex-row sm:">
             <div className="mb-2 sm:mb-0">
-              <h1 className="text-sm font-bold">Nama Kendaraan</h1>
+              <h1 className="text-sm font-bold">{t.vehicleName}</h1>
               <span className="text-sm text-gray-500 break-words">{title}</span>
             </div>
             <div className="sm:ml-4 sm:max-w-2xl">
-              <h1 className="text-sm font-bold">Plat Nomor</h1>
+              <h1 className="text-sm font-bold">{t.plateNumber}</h1>
               <span className="text-sm text-gray-500">{plate}</span>
             </div>
           </div>
 
           {description?.trim() && (
             <div className="p-1 border-b-2 border-gray-300">
-              <h1 className="text-sm font-bold">Deskripsi</h1>
+              <h1 className="text-sm font-bold">{t.description}</h1>
               <span className="text-sm text-gray-500 whitespace-pre-wrap">{description}</span>
             </div>
           )}
 
           <div className="p-1 border-b-2 border-gray-300">
-            <h1 className="text-sm font-bold">Tanggal Pengajuan</h1>
-              <span className="text-sm text-gray-500">{dayjs(requestDate).format("DD-MM-YYYY")}</span>
+            <h1 className="text-sm font-bold">{t.requestDate}</h1>
+            <span className="text-sm text-gray-500">{dayjs(requestDate).format("DD-MM-YYYY")}</span>
           </div>
-          
+
           <div className="p-1 border-b-2 border-gray-300 flex flex-col sm:flex-row sm:">
             <div className="mb-2 sm:mb-0">
-              <h1 className="text-sm font-bold">Jam Penggunaan</h1>
+              <h1 className="text-sm font-bold">{t.usageTime}</h1>
               <span className="text-sm text-gray-500">{requestTime}</span>
             </div>
             <div className="sm:ml-4 sm:max-w-2xl">
-              <h1 className="text-sm font-bold">Jam Kembali</h1>
+              <h1 className="text-sm font-bold">{t.returnTime}</h1>
               <span className="text-sm text-gray-500">{returnTime}</span>
             </div>
           </div>
 
           <div className="p-1 pb-3 border-b-2 border-gray-300">
-            <h1 className="text-sm font-bold mb-2">Status</h1>
+            <h1 className="text-sm font-bold mb-2">{t.status}</h1>
             <div className="flex flex-wrap gap-2">
               {status === "PENDING" && (
                 <span className="inline-block rounded-2xl bg-yellow-400 px-5 py-2 text-xs font-semibold text-white">
@@ -123,12 +124,12 @@ export default function Card({
               )}
               {status === "REJECTED" && (
                 <>
-                <span className="inline-block rounded-2xl bg-red-400 px-5 py-2 text-xs font-semibold text-white">
-                  {status}
-                </span>
-                <span className="inline-block  px-5 py-2 text-xs font-semibold text-black ">
-                  {rejectionReason}
-                </span>
+                  <span className="inline-block rounded-2xl bg-red-400 px-5 py-2 text-xs font-semibold text-white">
+                    {status}
+                  </span>
+                  <span className="inline-block px-5 py-2 text-xs font-semibold text-black ">
+                    {rejectionReason}
+                  </span>
                 </>
               )}
               {status === "APPROVED" && (
@@ -138,7 +139,7 @@ export default function Card({
                   </span>
                   {!isIdle && (
                     <span className="inline-block rounded-2xl bg-red-500 px-5 py-2 text-xs font-semibold text-white">
-                      Kendaraan Belum Kembali
+                      {t.vehicleNotReturned}
                     </span>
                   )}
                 </>

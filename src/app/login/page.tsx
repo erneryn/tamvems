@@ -6,6 +6,8 @@ import { Eye, EyeOff, Car, Shield, CheckCircle } from "lucide-react";
 import { useActionState } from "react";
 import { signInAction } from "@/lib/action";
 import { ActionState } from "@/lib/action";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/lib/translations";
 
 const initialState: ActionState = {
   success: false,
@@ -14,6 +16,8 @@ const initialState: ActionState = {
 }
 
 export default function Login() {
+  const { locale } = useLanguage();
+  const t = translations[locale].login;
   const [state, formAction, isPending] = useActionState(signInAction, initialState);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -92,7 +96,7 @@ export default function Login() {
               <span className="text-blue-600">Monitoring System</span>
             </h2>
             <p className="text-xl text-gray-600 mb-8">
-              Platform digital untuk mengelola kendaraan dinas dengan efisien dan transparan
+              {t.tagline}
             </p>
           </div>
 
@@ -101,25 +105,25 @@ export default function Login() {
               <div className="bg-green-100 p-2 rounded-full">
                 <CheckCircle className="w-5 h-5 text-green-600" />
               </div>
-              <span className="text-gray-700">Pencatatan kendaraan otomatis</span>
+              <span className="text-gray-700">{locale === "id" ? "Pencatatan kendaraan otomatis" : "Automatic vehicle recording"}</span>
             </div>
             <div className="flex items-center space-x-4">
               <div className="bg-green-100 p-2 rounded-full">
                 <CheckCircle className="w-5 h-5 text-green-600" />
               </div>
-              <span className="text-gray-700">Monitoring real-time ketersediaan</span>
+              <span className="text-gray-700">{locale === "id" ? "Monitoring real-time ketersediaan" : "Real-time availability monitoring"}</span>
             </div>
             <div className="flex items-center space-x-4">
               <div className="bg-green-100 p-2 rounded-full">
                 <CheckCircle className="w-5 h-5 text-green-600" />
               </div>
-              <span className="text-gray-700">Laporan penggunaan detail</span>
+              <span className="text-gray-700">{locale === "id" ? "Laporan penggunaan detail" : "Detailed usage reports"}</span>
             </div>
             <div className="flex items-center space-x-4">
               <div className="bg-green-100 p-2 rounded-full">
                 <Shield className="w-5 h-5 text-green-600" />
               </div>
-              <span className="text-gray-700">Keamanan data terjamin</span>
+              <span className="text-gray-700">{locale === "id" ? "Keamanan data terjamin" : "Data security guaranteed"}</span>
             </div>
           </div>
         </div>
@@ -135,12 +139,12 @@ export default function Login() {
                 </div>
                 <h1 className="text-2xl font-bold text-gray-900">TamVems</h1>
               </div>
-              <p className="text-gray-600">Masuk ke sistem monitoring kendaraan</p>
+              <p className="text-gray-600">{t.mobileSubtitle}</p>
             </div>
 
             <div className="hidden lg:block mb-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Selamat Datang</h3>
-              <p className="text-gray-600">Masuk ke akun Anda untuk melanjutkan</p>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">{t.welcome}</h3>
+              <p className="text-gray-600">{t.signInToContinue}</p>
             </div>
 
             <form action={handleSubmit} className="space-y-6">
@@ -152,7 +156,7 @@ export default function Login() {
               
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email / Username
+                  {t.emailUsername}
                 </label>
                 <input
                   type="email"
@@ -161,14 +165,14 @@ export default function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Masukkan email atau username"
+                  placeholder={t.emailPlaceholder}
                   required
                 />
               </div>
 
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                  Password
+                  {t.password}
                 </label>
                 <div className="relative">
                   <input
@@ -178,7 +182,7 @@ export default function Login() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Masukkan password"
+                    placeholder={t.passwordPlaceholder}
                     required
                   />
                   <button
@@ -204,14 +208,14 @@ export default function Login() {
                     onChange={(e) => handleRememberChange(e.target.checked)}
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="ml-2 text-sm text-gray-600">Ingat saya</span>
+                  <span className="ml-2 text-sm text-gray-600">{t.rememberMe}</span>
                 </label>
                 <button
                   type="button"
                   onClick={() => setShowForgotPasswordModal(true)}
                   className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
                 >
-                  Lupa password?
+                  {t.forgotPassword}
                 </button>
               </div>
 
@@ -223,10 +227,10 @@ export default function Login() {
                 {isPending ? (
                   <div className="flex items-center justify-center space-x-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                    <span>Memproses...</span>
+                    <span>{t.processing}</span>
                   </div>
                 ) : (
-                  "Masuk"
+                  t.signIn
                 )}
               </button>
             </form>
@@ -245,27 +249,20 @@ export default function Login() {
 
             <div className="mt-6 text-center">
               <p className="text-xs text-gray-500">
-                Dengan masuk, Anda menyetujui{" "}
-                {/* <Link href="/terms" className="text-blue-600 hover:underline"> */}
-                  Syarat & Ketentuan
-                {/* </Link>{" "} */}
-                dan{" "}
-                {/* <Link href="/privacy" className="text-blue-600 hover:underline"> */}
-                  Kebijakan Privasi
-                {/* </Link> */}
+                {t.termsAndPrivacy}
               </p>
             </div>
           </div>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">
-              Butuh bantuan?{" "}
+              {t.needHelp}{" "}
               <button
                   type="button"
                   onClick={() => setShowForgotPasswordModal(true)}
                   className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
                 >
-                Hubungi support
+                {t.contactSupport}
               </button>
             </p>
           </div>
@@ -281,16 +278,16 @@ export default function Login() {
             aria-hidden
           />
           <div className="relative bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">Lupa password?</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">{t.forgotPasswordTitle}</h3>
             <p className="text-gray-600 mb-6">
-              Silahkan hubungi admin untuk mendapatkan password anda
+              {t.forgotPasswordMessage}
             </p>
             <button
               type="button"
               onClick={() => setShowForgotPasswordModal(false)}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors"
             >
-              Tutup
+              {translations[locale].common.close}
             </button>
           </div>
         </div>

@@ -1,8 +1,16 @@
+"use client";
+
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/lib/translations";
+
 interface LoadingProps {
   type?: "card" | "form" | "full";
 }
 
 export default function Loading({ type = "full" }: LoadingProps) {
+  const { locale } = useLanguage();
+  const t = translations[locale].common.loading;
+
   if (type === "card") {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:mx-20">
@@ -42,7 +50,6 @@ export default function Loading({ type = "full" }: LoadingProps) {
     );
   }
 
-  // Full page loading
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-white bg-opacity-90 z-50">
       <div className="flex flex-col items-center gap-4">
@@ -50,7 +57,7 @@ export default function Loading({ type = "full" }: LoadingProps) {
           <div className="absolute top-0 left-0 w-full h-full border-4 border-gray-200 rounded-full" />
           <div className="absolute top-0 left-0 w-full h-full border-4 border-blue-600 rounded-full border-t-transparent animate-spin" />
         </div>
-        <p className="text-gray-600 font-medium">Loading...</p>
+        <p className="text-gray-600 font-medium">{t}</p>
       </div>
     </div>
   );

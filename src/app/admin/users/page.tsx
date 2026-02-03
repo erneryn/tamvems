@@ -28,14 +28,16 @@ import {
   HiXCircle,
   HiMail,
   HiPhone,
-  HiIdentification,
   HiKey,
   HiLockClosed,
   HiLockOpen,
   HiExclamationCircle,
   HiPlus,
+  HiIdentification,
   HiOutlineUserGroup,
 } from "react-icons/hi";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/lib/translations";
 
 interface User {
   id: string;
@@ -56,6 +58,8 @@ interface User {
 }
 
 function AdminUsersContent() {
+  const { locale } = useLanguage();
+  const t = translations[locale].admin.users;
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -141,7 +145,7 @@ function AdminUsersContent() {
   // Handle user modification action
   const handleUserAction = async () => {
     if (!selectedActionUser || !actionType) {
-      setActionError("Data tidak lengkap");
+      setActionError(t.dataIncomplete);
       return;
     }
 
@@ -205,7 +209,7 @@ function AdminUsersContent() {
   // Handle updating password permission
   const handleUpdatePasswordPermission = async () => {
     if (!selectedUser || !secretKey.trim()) {
-      setModalError("Secret key harus diisi");
+      setModalError(t.secretKeyRequired);
       return;
     }
 
@@ -266,7 +270,7 @@ function AdminUsersContent() {
       {/* Header */}
       <div className="flex items-center space-x-4">
         <HiUsers className="h-8 w-8 text-blue-600" />
-        <h1 className="text-3xl font-bold text-gray-900">Kelola Pengguna</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t.title}</h1>
       </div>
 
       {/* Success/Error Message */}
@@ -274,16 +278,22 @@ function AdminUsersContent() {
         <Alert
           color={
             error.includes("berhasil") ||
+            error.includes("success") ||
             error.includes("diaktifkan") ||
-            error.includes("dinonaktifkan")
+            error.includes("dinonaktifkan") ||
+            error.includes("activated") ||
+            error.includes("deactivated")
               ? "success"
               : "failure"
           }
           className="mb-4"
         >
           {error.includes("berhasil") ||
+          error.includes("success") ||
           error.includes("diaktifkan") ||
-          error.includes("dinonaktifkan") ? (
+          error.includes("dinonaktifkan") ||
+          error.includes("activated") ||
+          error.includes("deactivated") ? (
             <HiCheckCircle className="h-5 w-5 mr-3" />
           ) : (
             <HiXCircle className="h-5 w-5 mr-3" />
@@ -298,7 +308,7 @@ function AdminUsersContent() {
           <TextInput
             type="text"
             icon={HiSearch}
-            placeholder="Cari pengguna..."
+            placeholder={t.searchPlaceholder}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -307,14 +317,14 @@ function AdminUsersContent() {
         <div className="flex items-center gap-4">
           {/* Stats Card */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
-            <p className="text-sm text-blue-600">Total Pengguna</p>
+            <p className="text-sm text-blue-600">{t.totalUsers}</p>
             <p className="text-2xl font-bold text-blue-700">{users.length}</p>
           </div>
 
           {/* Add User Button */}
           <Button href="/admin/register" className="shrink-0">
             <HiPlus className="h-4 w-4 mr-2" />
-            Tambah Pengguna
+            {t.addUser}
           </Button>
         </div>
       </div>
@@ -331,31 +341,31 @@ function AdminUsersContent() {
               <TableHead className="text-xs text-gray-700 uppercase bg-gray-50">
                 <TableRow>
                   <TableHeadCell scope="col" className="px-6 py-3">
-                    Nama
+                    {t.name}
                   </TableHeadCell>
                   <TableHeadCell scope="col" className="px-6 py-3">
-                    Email
+                    {t.email}
                   </TableHeadCell>
                   <TableHeadCell scope="col" className="px-6 py-3">
-                    Pegawai
+                    {t.employeeId}
                   </TableHeadCell>
                   <TableHeadCell scope="col" className="px-6 py-3">
-                    Telepon
+                    {t.phone}
                   </TableHeadCell>
                   <TableHeadCell scope="col" className="px-6 py-3">
-                    Permintaan Kendaraan
+                    {t.vehicleRequests}
                   </TableHeadCell>
                   <TableHeadCell scope="col" className="px-6 py-3">
-                    Status
+                    {t.status}
                   </TableHeadCell>
                   <TableHeadCell scope="col" className="px-6 py-3">
-                    Ubah Password
+                    {t.changePassword}
                   </TableHeadCell>
                   <TableHeadCell scope="col" className="px-6 py-3">
-                    Aksi
+                    {t.actions}
                   </TableHeadCell>
                   <TableHeadCell scope="col" className="px-6 py-3">
-                    Bergabung
+                    {t.joined}
                   </TableHeadCell>
                 </TableRow>
               </TableHead>
@@ -367,8 +377,8 @@ function AdminUsersContent() {
                       className="text-center py-10 text-gray-500"
                     >
                       {searchTerm
-                        ? "Tidak ada pengguna yang sesuai dengan pencarian"
-                        : "Belum ada pengguna terdaftar"}
+                        ? t.noUsersSearch
+                        : t.noUsersYet}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -422,19 +432,19 @@ function AdminUsersContent() {
                           </div>
                         ) : (
                           <span className="text-sm text-gray-400 italic">
-                            Tidak ada
+                            {t.noPhone}
                           </span>
                         )}
                       </TableCell>
                       <TableCell>
                         <div className="text-center">
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            {user._count.vehicleRequests} permintaan
+                            {user._count.vehicleRequests} {t.requestsCount}
                           </span>
                           {user._count.createdRequests > 0 && (
                             <div className="mt-1">
                               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                {user._count.createdRequests} dibuat
+                                {user._count.createdRequests} {t.createdCount}
                               </span>
                             </div>
                           )}
@@ -448,10 +458,10 @@ function AdminUsersContent() {
                           {user.isActive ? (
                             <>
                               <HiCheckCircle className="mr-1 h-3 w-3" />
-                              Aktif
+                              {t.active}
                             </>
                           ) : (
-                            "Nonaktif"
+                            t.inactive
                           )}
                         </Badge>
                       </TableCell>
@@ -466,12 +476,12 @@ function AdminUsersContent() {
                             {user.enablePasswordChanges ? (
                               <>
                                 <HiLockOpen className="mr-1 h-3 w-3" />
-                                Diizinkan
+                                {t.allowed}
                               </>
                             ) : (
                               <>
                                 <HiLockClosed className="mr-1 h-3 w-3" />
-                                Diblokir
+                                {t.blocked}
                               </>
                             )}
                           </Badge>
@@ -484,7 +494,7 @@ function AdminUsersContent() {
                             className="text-xs"
                           >
                             <HiKey className="mr-1 h-3 w-3" />
-                            {user.enablePasswordChanges ? "Blokir" : "Izinkan"}
+                            {user.enablePasswordChanges ? t.block : t.allow}
                           </Button>
                         </div>
                       </TableCell>
@@ -498,7 +508,7 @@ function AdminUsersContent() {
                               className="text-xs w-full"
                             >
                               <HiXCircle className="mr-1 h-3 w-3" />
-                              Nonaktifkan
+                              {t.confirmDeactivate.replace(" Pengguna", "")}
                             </Button>
                           ) : (
                             <Button
@@ -508,25 +518,25 @@ function AdminUsersContent() {
                               className="text-xs w-full"
                             >
                               <HiXCircle className="mr-1 h-3 w-3" />
-                              Hapus
+                              {t.confirmDelete.replace(" Pengguna", "")}
                             </Button>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="text-sm text-gray-600">
-                          {new Date(user.createdAt).toLocaleDateString(
-                            "id-ID",
-                            {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric",
-                            }
-                          )}
+                            {new Date(user.createdAt).toLocaleDateString(
+                              locale === "id" ? "id-ID" : "en-GB",
+                              {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              }
+                            )}
                         </div>
                         <div className="text-xs text-gray-400">
                           {new Date(user.createdAt).toLocaleTimeString(
-                            "id-ID",
+                            locale === "id" ? "id-ID" : "en-GB",
                             {
                               hour: "2-digit",
                               minute: "2-digit",
@@ -550,8 +560,8 @@ function AdminUsersContent() {
             <HiKey className="h-6 w-6 text-blue-500" />
             <span>
               {selectedUser?.enablePasswordChanges
-                ? "Blokir Perubahan Password"
-                : "Izinkan Perubahan Password"}
+                ? t.blockPasswordChange
+                : t.allowPasswordChange}
             </span>
           </div>
         </ModalHeader>
@@ -561,15 +571,13 @@ function AdminUsersContent() {
               <HiExclamationCircle className="h-5 w-5 text-yellow-500 mt-0.5" />
               <div>
                 <p className="text-sm text-yellow-800">
-                  <strong>Peringatan:</strong> Anda akan{" "}
-                  {selectedUser?.enablePasswordChanges
-                    ? "memblokir"
-                    : "mengizinkan"}{" "}
+                  <strong>{t.warning}</strong> {t.passwordChangeWarningYouWill}{" "}
+                  {selectedUser?.enablePasswordChanges ? t.passwordChangeWarningBlockVerb : t.passwordChangeWarningAllowVerb}{" "}
                   <span className="font-medium">{selectedUser?.name}</span>{" "}
-                  untuk mengubah password mereka.
+                  {t.passwordChangeWarningToChangePassword}
                 </p>
                 <p className="text-xs text-yellow-700 mt-1">
-                  Tindakan ini memerlukan password default yang akan diganti.
+                  {t.thisActionRequiresDefaultPassword}
                 </p>
               </div>
             </div>
@@ -586,26 +594,26 @@ function AdminUsersContent() {
                 htmlFor="secretKey"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Password Default <span className="text-red-500">*</span>
+                {t.defaultPassword} <span className="text-red-500">*</span>
               </Label>
               <TextInput
                 id="secretKey"
                 type="password"
-                placeholder="Masukkan password default"
+                placeholder={t.enterDefaultPassword}
                 value={secretKey}
                 onChange={(e) => setSecretKey(e.target.value)}
                 disabled={isUpdating}
                 required
               />
               <p className="mt-1 text-xs text-gray-500">
-                  Gunakan password default ini untuk login, arahkan pengguna untuk mengubah password setelah login pertama.
+                {t.useDefaultPasswordHint}
               </p>
             </div>
           </div>
         </ModalBody>
         <ModalFooter>
           <Button color="gray" onClick={handleCloseModal} disabled={isUpdating}>
-            Batal
+            {t.cancel}
           </Button>
           <Button
             color={selectedUser?.enablePasswordChanges ? "failure" : "success"}
@@ -615,15 +623,14 @@ function AdminUsersContent() {
             {isUpdating ? (
               <>
                 <Spinner size="sm" className="mr-2" />
-                Memproses...
+                {t.processing}
               </>
             ) : (
               <>
                 <HiKey className="h-4 w-4 mr-2" />
                 {selectedUser?.enablePasswordChanges
-                  ? "Blokir"
-                  : "Izinkan"}{" "}
-                Password
+                  ? t.blockPassword
+                  : t.allowPassword}
               </>
             )}
           </Button>
@@ -637,8 +644,8 @@ function AdminUsersContent() {
             <HiExclamationCircle className="h-6 w-6 text-red-500" />
             <span>
               {actionType === 'deactivate'
-                ? 'Nonaktifkan Pengguna'
-                : 'Hapus Pengguna'}
+                ? t.confirmDeactivate
+                : t.confirmDelete}
             </span>
           </div>
         </ModalHeader>
@@ -648,19 +655,17 @@ function AdminUsersContent() {
               <HiExclamationCircle className="h-5 w-5 text-red-500 mt-0.5" />
               <div>
                 <p className="text-sm text-red-800">
-                  <strong>Peringatan:</strong> Anda akan{' '}
-                  {actionType === 'deactivate'
-                    ? 'menonaktifkan'
-                    : 'menghapus'}{' '}
-                  pengguna <span className="font-medium">{selectedActionUser?.name}</span>.
+                  <strong>{t.warning}</strong> {t.actionModalYouWill}{" "}
+                  {actionType === "deactivate" ? t.deactivating : t.deleting}{" "}
+                  {t.userLabel} <span className="font-medium">{selectedActionUser?.name}</span>.
                 </p>
-                {actionType === 'deactivate' ? (
+                {actionType === "deactivate" ? (
                   <p className="text-xs text-red-700 mt-1">
-                    Pengguna yang dinonaktifkan tidak akan dapat login ke sistem.
+                    {t.deactivatedUserCannotLogin}
                   </p>
                 ) : (
                   <p className="text-xs text-red-700 mt-1">
-                    Tindakan ini akan menghapus pengguna secara permanen. Pengguna harus sudah dinonaktifkan terlebih dahulu.
+                    {t.deletePermanentWarning}
                   </p>
                 )}
               </div>
@@ -674,26 +679,26 @@ function AdminUsersContent() {
             )}
 
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="text-sm font-medium text-gray-900 mb-2">Detail Pengguna:</h4>
+              <h4 className="text-sm font-medium text-gray-900 mb-2">{t.userDetails}</h4>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <span className="text-gray-500">Nama:</span>
+                  <span className="text-gray-500">{t.nameColon}</span>
                   <span className="ml-2 font-medium">{selectedActionUser?.name}</span>
                 </div>
                 <div>
-                  <span className="text-gray-500">Email:</span>
+                  <span className="text-gray-500">{t.emailColon}</span>
                   <span className="ml-2 font-medium">{selectedActionUser?.email}</span>
                 </div>
                 <div>
-                  <span className="text-gray-500">NIP:</span>
+                  <span className="text-gray-500">{t.nipColon}</span>
                   <span className="ml-2 font-medium">{selectedActionUser?.employeeId}</span>
                 </div>
                 <div>
-                  <span className="text-gray-500">Status:</span>
+                  <span className="text-gray-500">{t.statusColon}</span>
                   <span className={`ml-2 font-medium ${
-                    selectedActionUser?.isActive ? 'text-green-600' : 'text-red-600'
+                    selectedActionUser?.isActive ? "text-green-600" : "text-red-600"
                   }`}>
-                    {selectedActionUser?.isActive ? 'Aktif' : 'Nonaktif'}
+                    {selectedActionUser?.isActive ? t.active : t.inactive}
                   </span>
                 </div>
               </div>
@@ -702,7 +707,7 @@ function AdminUsersContent() {
         </ModalBody>
         <ModalFooter>
           <Button color="gray" onClick={handleCloseActionModal} disabled={isProcessingAction}>
-            Batal
+            {t.cancel}
           </Button>
           <Button
             color={actionType === 'deactivate' ? 'warning' : 'failure'}
@@ -712,12 +717,12 @@ function AdminUsersContent() {
             {isProcessingAction ? (
               <>
                 <Spinner size="sm" className="mr-2" />
-                Memproses...
+                {t.processing}
               </>
             ) : (
               <>
                 <HiXCircle className="h-4 w-4 mr-2" />
-                {actionType === 'deactivate' ? 'Nonaktifkan' : 'Hapus'}
+                {actionType === "deactivate" ? t.confirmDeactivate.replace(" Pengguna", "") : t.confirmDelete.replace(" Pengguna", "")}
               </>
             )}
           </Button>

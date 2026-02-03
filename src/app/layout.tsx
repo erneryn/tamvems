@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeInit } from "../../.flowbite-react/init";
 import ConditionalLayout from "@/components/ConditionalLayout";
 import { SessionProvider } from 'next-auth/react'
+import { LanguageProvider } from '@/contexts/LanguageContext'
 
 const geistSans = localFont({
   src: '../../node_modules/geist/dist/fonts/geist-sans/Geist-Regular.woff2',
@@ -37,9 +38,11 @@ export default function RootLayout({
       <body className="font-sans antialiased min-h-screen flex flex-col">
         <ThemeInit />
         <SessionProvider>
-          <ConditionalLayout>
-            {children}
-          </ConditionalLayout>
+          <LanguageProvider>
+            <ConditionalLayout>
+              {children}
+            </ConditionalLayout>
+          </LanguageProvider>
         </SessionProvider>
       </body>
     </html>

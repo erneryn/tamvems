@@ -1,5 +1,7 @@
 import dayjs from 'dayjs';
-import { VehicleRequest, RequestStatus } from '@prisma/client';
+import { VehicleRequest } from '@prisma/client';
+import type { Locale } from '@/contexts/LanguageContext';
+import { translations } from '@/lib/translations';
 
 export interface RequestFilterOptions {
   status?: string;
@@ -108,39 +110,42 @@ export function getDateRangeFilter(dateRange: string) {
 }
 
 /**
- * Get status filter options for UI
+ * Get status filter options for UI (translated by locale)
  */
-export function getStatusOptions() {
+export function getStatusOptions(locale: Locale = 'id') {
+  const t = translations[locale].filters;
   return [
-    { value: '', label: 'Semua Status' },
-    { value: 'PENDING', label: 'Pending' },
-    { value: 'APPROVED', label: 'Disetujui' },
-    { value: 'REJECTED', label: 'Ditolak' },
-    { value: 'IN_USE', label: 'Sedang Digunakan' },
-    { value: 'COMPLETED', label: 'Selesai' },
-    { value: 'CANCELLED', label: 'Dibatalkan' }
+    { value: '', label: t.statusAll },
+    { value: 'PENDING', label: t.statusPending },
+    { value: 'APPROVED', label: t.statusApproved },
+    { value: 'REJECTED', label: t.statusRejected },
+    { value: 'IN_USE', label: t.statusInUse },
+    { value: 'COMPLETED', label: t.statusCompleted },
+    { value: 'CANCELLED', label: t.statusCancelled }
   ];
 }
 
 /**
- * Get date range filter options for UI
+ * Get date range filter options for UI (translated by locale)
  */
-export function getDateRangeOptions() {
+export function getDateRangeOptions(locale: Locale = 'id') {
+  const t = translations[locale].filters;
   return [
-    { value: '', label: 'Semua Waktu' },
-    { value: 'today', label: 'Hari Ini' },
-    { value: 'week', label: 'Minggu Ini' },
-    { value: 'month', label: 'Bulan Ini' },
-    { value: 'year', label: 'Tahun Ini' }
+    { value: '', label: t.dateRangeAll },
+    { value: 'today', label: t.dateRangeToday },
+    { value: 'week', label: t.dateRangeWeek },
+    { value: 'month', label: t.dateRangeMonth },
+    { value: 'year', label: t.dateRangeYear }
   ];
 }
 
 /**
- * Get sort options for UI
+ * Get sort options for UI (translated by locale)
  */
-export function getSortOptions() {
+export function getSortOptions(locale: Locale = 'id') {
+  const t = translations[locale].filters;
   return [
-    { value: 'desc', label: 'Terbaru' },
-    { value: 'asc', label: 'Terlama' }
+    { value: 'desc', label: t.sortNewest },
+    { value: 'asc', label: t.sortOldest }
   ];
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useMemo } from "react";
 import {
   Button,
   Card,
@@ -28,6 +28,8 @@ import {
 } from "react-icons/hi";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/lib/translations";
 
 interface Vehicle {
   id: string;
@@ -41,15 +43,21 @@ interface Vehicle {
   createdAt: string;
 }
 
-const typeLabels = {
-  BENSIN: { label: "Bensin", color: "info" },
-  DIESEL: { label: "Diesel", color: "warning" },
-  ELECTRIC: { label: "Listrik", color: "success" },
+const typeColors = {
+  BENSIN: "info",
+  DIESEL: "warning",
+  ELECTRIC: "success",
 } as const;
 
 function AdminVehiclesContent() {
-
   const searchParams = useSearchParams();
+  const { locale } = useLanguage();
+  const t = translations[locale].admin.vehicles;
+  const typeLabels = useMemo(() => ({
+    BENSIN: { label: t.fuelBensin, color: typeColors.BENSIN },
+    DIESEL: { label: t.fuelDiesel, color: typeColors.DIESEL },
+    ELECTRIC: { label: t.fuelElectric, color: typeColors.ELECTRIC },
+  }), [locale, t.fuelBensin, t.fuelDiesel, t.fuelElectric]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -96,7 +104,7 @@ function AdminVehiclesContent() {
       {/* Header */}
       <div className="flex items-center space-x-4">
         <HiTruck className="h-8 w-8 text-blue-600" />
-        <h1 className="text-3xl font-bold text-gray-900">Kelola Kendaraan</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t.title}</h1>
       </div>
 
       {/* Success Message */}
@@ -105,8 +113,8 @@ function AdminVehiclesContent() {
           <HiCheckCircle className="h-5 w-5 text-green-500 mr-3" />
           <p className="text-green-700">
             {successType === "registered" 
-              ? "Kendaraan berhasil didaftarkan!" 
-              : "Kendaraan berhasil dihapus!"}
+              ? t.successRegistered 
+              : t.successDeleted}
           </p>
         </div>
       )}
@@ -125,14 +133,14 @@ function AdminVehiclesContent() {
           <TextInput
             type="text"
             icon={HiSearch}
-            placeholder="Cari kendaraan..."
+            placeholder={t.searchPlaceholder}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <Button href="/admin/vehicles/register" className="shrink-0">
           <HiPlus className="h-4 w-4 mr-2" />
-          Tambah Kendaraan
+          {t.addVehicle}
         </Button>
       </div>
 
@@ -142,13 +150,13 @@ function AdminVehiclesContent() {
       >
         <ModalHeader>
           <span className="text-lg font-semibold text-gray-900">
-            Foto Kendaraan
+            {t.photo}
           </span>
         </ModalHeader>
         <ModalBody>
           <Image
             src={selectedImage || ""}
-            alt="Selected Image"
+            alt={t.photoAlt}
             width={1000}
             height={1000}
             objectFit="contain"
@@ -168,28 +176,28 @@ function AdminVehiclesContent() {
               <TableHead className="text-xs text-gray-700 uppercase bg-gray-50">
                 <TableRow>
                   <TableHeadCell scope="col" className="px-6 py-3 w-40">
-                    Foto
+                    {t.photo}
                   </TableHeadCell>
                   <TableHeadCell scope="col" className="px-6 py-3">
-                    Nama
+                    {t.name}
                   </TableHeadCell>
                   <TableHeadCell scope="col" className="px-6 py-3">
-                    Plat Nomor
+                    {t.plateNumber}
                   </TableHeadCell>
                   <TableHeadCell scope="col" className="px-6 py-3">
-                    Tipe
+                    {t.type}
                   </TableHeadCell>
                   <TableHeadCell scope="col" className="px-6 py-3">
-                    Tahun
+                    {t.year}
                   </TableHeadCell>
                   <TableHeadCell scope="col" className="px-6 py-3 max-w-[200px]">
-                    Deskripsi
+                    {t.description}
                   </TableHeadCell>
                   <TableHeadCell scope="col" className="px-6 py-3">
-                    Status
+                    {t.status}
                   </TableHeadCell>
                   <TableHeadCell scope="col" className="px-6 py-3">
-                    Aksi
+                    {t.action}
                   </TableHeadCell>
                 </TableRow>
               </TableHead>
@@ -201,8 +209,8 @@ function AdminVehiclesContent() {
                       className="text-center py-10 text-gray-500"
                     >
                       {searchTerm
-                        ? "Tidak ada kendaraan yang sesuai dengan pencarian"
-                        : "Belum ada kendaraan terdaftar"}
+                        ? t.noVehiclesSearch
+                        : t.noVehiclesYet}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -248,7 +256,7 @@ function AdminVehiclesContent() {
                       </TableCell>
                       <TableCell>
                         <Badge color={vehicle.isActive ? "success" : "gray"} className="flex items-center justify-center">
-                          {vehicle.isActive ? "Aktif" : "Nonaktif"}
+                          {vehicle.isActive ? t.active : t.inactive}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -259,7 +267,7 @@ function AdminVehiclesContent() {
                           className="flex items-center justify-center"
                         >
                           <HiPencil className="h-4 w-4 mr-1" />
-                          Edit
+                          {t.edit}
                         </Button>
                       </TableCell>
                     </TableRow>

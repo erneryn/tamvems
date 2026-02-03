@@ -22,8 +22,12 @@ import {
   HiExclamationCircle 
 } from "react-icons/hi";
 import { useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/lib/translations";
 
 export default function Register() {
+  const { locale } = useLanguage();
+  const t = translations[locale].admin.register;
   const [password, setPassword] = useState("");
   const [formData, setFormData] = useState({
     name: "",
@@ -64,7 +68,7 @@ export default function Register() {
     e.preventDefault();
     
     if (!password) {
-      setError("Silakan generate password terlebih dahulu");
+      setError(t.generateFirst);
       return;
     }
 
@@ -91,7 +95,7 @@ export default function Register() {
           const message = data.details.map((detail: { message: string }) => detail?.message).join(', ');
           throw new Error(message);
         }
-        throw new Error(data.error || 'Gagal mendaftarkan pengguna');
+        throw new Error(data.error || t.registerError);
       }
 
       // Store registered user data for modal
@@ -114,7 +118,7 @@ export default function Register() {
       setPassword("");
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Terjadi kesalahan');
+      setError(err instanceof Error ? err.message : t.genericError);
     } finally {
       setIsLoading(false);
     }
@@ -140,7 +144,7 @@ export default function Register() {
     <div className="p-6">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-xl sm:text-5xl md:text-6xl text-gray-900 mb-6">
-          Input Pengguna Baru
+          {t.title}
         </h1>
         <div className="border-b-2 border-gray-300 w-full"></div>
         
@@ -158,13 +162,13 @@ export default function Register() {
           <div className="max-w-2xl mx-auto">
             <div className="grid gap-6 mb-6">
               <div>
-                <Label htmlFor="name">Nama Lengkap</Label>
+                <Label htmlFor="name">{t.nameLabel}</Label>
                 <TextInput
                   id="name"
                   name="name"
                   type="text"
                   icon={HiUser}
-                  placeholder="Masukkan nama lengkap"
+                  placeholder={t.namePlaceholder}
                   value={formData.name}
                   onChange={handleInputChange}
                   disabled={isLoading}
@@ -173,13 +177,13 @@ export default function Register() {
               </div>
 
               <div>
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t.emailLabel || "Email"}</Label>
                 <TextInput
                   id="email"
                   name="email"
                   type="email"
                   icon={HiMail}
-                  placeholder="nama@email.com"
+                  placeholder={t.emailPlaceholder}
                   value={formData.email}
                   onChange={handleInputChange}
                   disabled={isLoading}
@@ -189,13 +193,13 @@ export default function Register() {
 
 
               <div>
-                <Label htmlFor="phone">Nomor Handphone</Label>
+                <Label htmlFor="phone">{t.phoneLabel}</Label>
                 <TextInput
                   id="phone"
                   name="phone"
                   type="tel"
                   icon={HiPhone}
-                  placeholder="Masukkan nomor handphone"
+                  placeholder={t.phonePlaceholder}
                   value={formData.phone}
                   onChange={handleInputChange}
                   disabled={isLoading}
@@ -204,7 +208,7 @@ export default function Register() {
               </div>
 
               <div>
-                <Label htmlFor="division">Divisi</Label>
+                <Label htmlFor="division">{t.divisionLabel}</Label>
                 <Select
                   id="division"
                   name="division"
@@ -213,7 +217,7 @@ export default function Register() {
                   disabled={isLoading}
                   required
                 >
-                  <option value="">Pilih Divisi</option>
+                  <option value="">{t.selectDivision}</option>
                   <option value="A">A</option>
                   <option value="B">B</option>
                   <option value="C">C</option>
@@ -229,7 +233,7 @@ export default function Register() {
               </div>
 
               <div>
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t.passwordLabel}</Label>
                 <div className="flex gap-2">
                   <TextInput
                     id="password"
@@ -245,11 +249,11 @@ export default function Register() {
                     onClick={generatePassword}
                     disabled={isLoading}
                   >
-                    Generate Password
+                    {t.generatePassword}
                   </Button>
                 </div>
                 <p className="mt-1 text-sm text-gray-500">
-                  Password akan digenerate secara otomatis
+                  {t.passwordHint}
                 </p>
               </div>
             </div>
@@ -258,10 +262,10 @@ export default function Register() {
               {isLoading ? (
                 <>
                   <Spinner size="sm" className="mr-2" />
-                  Mendaftarkan...
+                  {t.submitting}
                 </>
               ) : (
-                "Daftar"
+                t.submit
               )}
             </Button>
           </div>
@@ -273,7 +277,7 @@ export default function Register() {
         <ModalHeader>
           <div className="flex items-center space-x-2">
             <HiCheckCircle className="h-6 w-6 text-green-500" />
-            <span>Pengguna Berhasil Didaftarkan</span>
+            <span>{t.successTitle}</span>
           </div>
         </ModalHeader>
         <ModalBody>
@@ -283,11 +287,10 @@ export default function Register() {
               <HiExclamationCircle className="h-5 w-5 text-yellow-500 mt-0.5" />
               <div>
                 <p className="text-sm font-semibold text-yellow-800">
-                  ⚠️ PENTING: Password hanya ditampilkan sekali!
+                  ⚠️ {t.importantWarning}
                 </p>
                 <p className="text-xs text-yellow-700 mt-1">
-                  Pastikan untuk menyimpan atau mencatat informasi login ini dengan aman. 
-                  Password tidak akan ditampilkan lagi setelah modal ini ditutup.
+                  {t.importantWarningDesc}
                 </p>
               </div>
             </div>
@@ -295,13 +298,12 @@ export default function Register() {
             {registeredUser && (
               <div className="space-y-3">
                 <p className="text-sm text-gray-600">
-                  Pengguna <span className="font-semibold">{registeredUser.name}</span> telah berhasil didaftarkan. 
-                  Berikut adalah informasi login yang perlu diberikan kepada pengguna:
+                  {t.userRegisteredMessage.replace("{name}", registeredUser.name)}
                 </p>
 
                 {/* Email */}
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">Email:</Label>
+                  <Label className="text-sm font-medium text-gray-700">{t.emailLabelColon}</Label>
                   <div className="flex items-center gap-2 mt-1">
                     <TextInput
                       value={registeredUser.email}
@@ -316,12 +318,12 @@ export default function Register() {
                       {copiedField === 'email' ? (
                         <>
                           <HiCheckCircle className="h-4 w-4 mr-1" />
-                          Disalin
+                          {t.copied}
                         </>
                       ) : (
                         <>
                           <HiClipboard className="h-4 w-4 mr-1" />
-                          Salin
+                          {t.copy}
                         </>
                       )}
                     </Button>
@@ -330,7 +332,7 @@ export default function Register() {
 
                 {/* Password */}
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">Password:</Label>
+                  <Label className="text-sm font-medium text-gray-700">{t.passwordLabelModal}</Label>
                   <div className="flex items-center gap-2 mt-1">
                     <TextInput
                       value={registeredUser.password}
@@ -345,12 +347,12 @@ export default function Register() {
                       {copiedField === 'password' ? (
                         <>
                           <HiCheckCircle className="h-4 w-4 mr-1" />
-                          Disalin
+                          {t.copied}
                         </>
                       ) : (
                         <>
                           <HiClipboard className="h-4 w-4 mr-1" />
-                          Salin
+                          {t.copy}
                         </>
                       )}
                     </Button>
@@ -360,12 +362,12 @@ export default function Register() {
                 {/* Security Note */}
                 <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                   <p className="text-xs text-blue-800">
-                    <strong>Catatan Keamanan:</strong>
+                    <strong>{t.securityNote}</strong>
                   </p>
                   <ul className="text-xs text-blue-700 mt-1 space-y-1">
-                    <li>• Berikan informasi ini secara langsung kepada pengguna</li>
-                    <li>• Jangan mengirim password melalui email atau pesan tidak aman</li>
-                    <li>• Sarankan pengguna untuk mengubah password setelah login pertama</li>
+                    <li>• {t.securityBullet1}</li>
+                    <li>• {t.securityBullet2}</li>
+                    <li>• {t.securityBullet3}</li>
                   </ul>
                 </div>
               </div>
@@ -374,7 +376,7 @@ export default function Register() {
         </ModalBody>
         <ModalFooter>
           <Button color="gray" onClick={closeModal}>
-            Tutup
+            {t.close}
           </Button>
         </ModalFooter>
       </Modal>

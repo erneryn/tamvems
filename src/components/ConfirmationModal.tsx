@@ -1,11 +1,13 @@
 "use client";
 
 import { Button, TextInput } from "flowbite-react";
-import { HiX, HiDocumentText, HiExternalLink } from "react-icons/hi";
+import { HiX, HiExternalLink } from "react-icons/hi";
 import { VehicleRequest, User, Vehicle } from "@prisma/client";
 import dayjs from "dayjs";
 import { useState } from "react";
 import Image from "next/image";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/lib/translations";
 
 interface RequestData extends VehicleRequest {
   user: User;
@@ -29,6 +31,8 @@ export default function ConfirmationModal({
   handleRejectApi: (reason: string) => void;
   selectedRequest: RequestData;
 }) {
+  const { locale } = useLanguage();
+  const t = translations[locale].components.confirmationModal;
   const [reason, setReason] = useState("");
   const [isReject, setIsReject] = useState(false);
 
@@ -42,11 +46,11 @@ export default function ConfirmationModal({
         <div className="fixed inset-0 " onClick={handleCancel}>
           <div className="fixed inset-0 bg-black opacity-50"></div>
         </div>
-        <div className={`relative bg-white rounded-lg shadow-xl w-full mx-4 ${selectedRequest.documentUrl && isPdfDocument(selectedRequest.documentUrl) ? 'max-w-4xl' : 'max-w-md'}`}>
+        <div className={`relative bg-white rounded-lg shadow-xl w-full mx-4 flex max-h-[90vh] flex-col ${selectedRequest.documentUrl && isPdfDocument(selectedRequest.documentUrl) ? 'max-w-4xl' : 'max-w-md'}`}>
           {/* Modal Header */}
-          <div className="flex items-center justify-between p-6 border-b">
+          <div className="flex shrink-0 items-center justify-between p-6 border-b">
             <h3 className="text-lg font-semibold text-gray-900">
-              Konfirmasi Tindakan
+              {t.title}
             </h3>
             <Button
               color="gray"
@@ -59,21 +63,21 @@ export default function ConfirmationModal({
             </Button>
           </div>
 
-          {/* Modal Body */}
-          <div className="p-6 space-y-6">
+          {/* Modal Body - scrollable when content is tall */}
+          <div className="min-h-0 flex-1 overflow-y-auto p-6 space-y-6">
             {!isReject ? (
               <p className="text-base text-gray-500">
-                Pilih tindakan untuk pengajuan:
+                {t.chooseAction}
               </p>
             ) : (
               <p className="text-base text-gray-500">
-                Masukkan alasan penolakan:
+                {t.rejectionPrompt}
               </p>
             )}
             {isReject ? (
               <TextInput
                 type="text"
-                placeholder="Masukkan alasan penolakan"
+                placeholder={t.rejectionPlaceholder}
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
               />
@@ -82,35 +86,35 @@ export default function ConfirmationModal({
                 {selectedRequest && (
                   <div className="bg-gray-50 p-4 rounded-lg space-y-2">
                     <p>
-                      <strong>Nama:</strong> {selectedRequest.user.name}
+                      <strong>{t.name}:</strong> {selectedRequest.user.name}
                     </p>
                     <p>
-                      <strong>Kendaraan:</strong> {selectedRequest.vehicle.name}
+                      <strong>{t.vehicle}:</strong> {selectedRequest.vehicle.name}
                     </p>
                     <p>
-                      <strong>Tujuan:</strong> {selectedRequest.destination}
+                      <strong>{t.destination}:</strong> {selectedRequest.destination}
                     </p>
                     <p>
-                      <strong>Waktu:</strong>{" "}
+                      <strong>{t.time}:</strong>{" "}
                       {dayjs(selectedRequest.startDateTime).format("HH:mm")} -{" "}
                       {dayjs(selectedRequest.endDateTime).format("HH:mm")}
                     </p>
                     {selectedRequest.vehicle.description?.trim() && (
                       <p>
-                        <strong>Deskripsi:</strong> {selectedRequest.vehicle.description}
+                        <strong>{t.description}:</strong> {selectedRequest.vehicle.description}
                       </p>
                     )}
                     {selectedRequest.documentUrl && (
                       <div className="pt-2 border-t border-gray-200 mt-2">
                         <div className="flex items-center justify-between mb-2">
-                          <strong>Dokumen Surat Tugas:</strong>
+                          <strong>{t.documentTask}</strong>
                           <a
                             href={selectedRequest.documentUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 hover:underline"
                           >
-                            Buka di tab baru
+                            {t.openInNewTab}
                             <HiExternalLink className="w-4 h-4 ml-1" />
                           </a>
                         </div>
@@ -119,7 +123,7 @@ export default function ConfirmationModal({
                             <iframe
                               src={`https://docs.google.com/viewer?url=${encodeURIComponent(selectedRequest.documentUrl)}&embedded=true`}
                               className="w-full h-[400px]"
-                              title="Dokumen Surat Tugas PDF"
+                              title={t.documentPdfTitle}
                               frameBorder="0"
                             />
                           </div>
@@ -127,7 +131,7 @@ export default function ConfirmationModal({
                           <div className="relative w-full h-40 rounded-lg overflow-hidden border border-gray-200">
                             <Image
                               src={selectedRequest.documentUrl}
-                              alt="Dokumen Surat Tugas"
+                              alt={t.documentTask}
                               fill
                               style={{ objectFit: "contain" }}
                             />
@@ -141,38 +145,38 @@ export default function ConfirmationModal({
             )}
           </div>
 
-          {/* Modal Footer */}
+          {/* Modal Footer - always visible at bottom */}
           {isReject ? (
-            <div className="flex space-x-3 p-6 border-t">
+            <div className="flex shrink-0 space-x-3 p-6 border-t">
               <Button disabled={!reason} color="red" onClick={() => handleRejectApi(reason)} className="flex-1">
-                Tolak
+                {t.reject}
               </Button>
               <Button
                 color="alternative"
                 onClick={() => setIsReject(false)}
                 className="flex-1"
               >
-                Kembali
+                {t.back}
               </Button>
             </div>
           ) : (
-            <div className="flex space-x-3 p-6 border-t">
+            <div className="flex shrink-0 space-x-3 p-6 border-t">
               <Button color="green" onClick={handleApprove} className="flex-1">
-                Setujui
+                {t.approve}
               </Button>
               <Button
                 color="red"
                 onClick={handleRejectClick}
                 className="flex-1"
               >
-                Tolak
+                {t.reject}
               </Button>
               <Button
                 color="alternative"
                 onClick={handleCancel}
                 className="flex-1"
               >
-                Kembali
+                {t.back}
               </Button>
             </div>
           )}

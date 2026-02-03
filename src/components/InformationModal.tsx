@@ -2,6 +2,8 @@
 
 import { Modal, Button, ModalHeader, ModalBody, ModalFooter } from "flowbite-react";
 import { HiInformationCircle } from "react-icons/hi";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/lib/translations";
 
 interface InformationModalProps {
   isOpen: boolean;
@@ -13,15 +15,19 @@ interface InformationModalProps {
 export default function InformationModal({
   isOpen,
   onClose,
-  title = "Informasi",
+  title,
   message,
 }: InformationModalProps) {
+  const { locale } = useLanguage();
+  const t = translations[locale].components.informationModal;
+  const displayTitle = title ?? t.defaultTitle;
+
   return (
     <Modal show={isOpen} onClose={onClose} size="md">
       <ModalHeader className="border-b border-gray-200">
         <div className="flex items-center space-x-2">
           <HiInformationCircle className="h-6 w-6 text-blue-600" />
-          <span className="text-lg font-semibold text-gray-900">{title}</span>
+          <span className="text-lg font-semibold text-gray-900">{displayTitle}</span>
         </div>
       </ModalHeader>
       <ModalBody>
@@ -35,7 +41,7 @@ export default function InformationModal({
           onClick={onClose}
           className="bg-gradient-to-br from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900"
         >
-          Mengerti
+          {t.okButton}
         </Button>
       </ModalFooter>
     </Modal>

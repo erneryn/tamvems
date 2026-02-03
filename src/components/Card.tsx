@@ -1,6 +1,10 @@
+"use client";
+
 import { Button, Card as CardFlowbite } from "flowbite-react";
 import { useState } from "react";
 import TimeSelectionModal from "./TimeSelectionModal";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/lib/translations";
 
 export default function Card({
   id,
@@ -35,6 +39,8 @@ export default function Card({
   pendingCount?: number;
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { locale } = useLanguage();
+  const t = translations[locale].components.card;
 
   return (
     <CardFlowbite
@@ -53,27 +59,27 @@ export default function Card({
       </div>
       <div className="flex flex-col gap-0">
         <p className="font-normal text-gray-700">
-          Bahan Bakar: <span className="font-bold ">{description}</span>
+          {t.fuel}: <span className="font-bold ">{description}</span>
         </p>
         <p className="font-normal text-gray-700">
-          Tahun: <span className="font-bold ">{year}</span>
+          {t.year}: <span className="font-bold ">{year}</span>
         </p>
         {vehicleDescription?.trim() && (
           <p className="font-normal text-gray-700 line-clamp-2" title={vehicleDescription}>
-            Deskripsi: <span className="font-bold ">{vehicleDescription}</span>
+            {t.description}: <span className="font-bold ">{vehicleDescription}</span>
           </p>
         )}
       </div>
       {!isAvailable ? (
         <span className="text-sm text-gray-500">
-          silahkan pilih waktu diluar waktu yang sudah di booking
+          {t.pickTimeOutside}
         </span>
       ) : (
         <Button
           onClick={onClick}
           className="w-full bg-gradient-to-br from-blue-600 to-blue-800  "
         >
-          Gunakan
+          {t.use}
         </Button>
       )}
       <TimeSelectionModal
@@ -84,17 +90,17 @@ export default function Card({
       <div className="absolute top-0 right-0 z-10 p-3 flex flex-col gap-2">
         {isOverlapping && (
           <span className="ml-3 mr-2 rounded bg-red-400 px-5 py-1 text-xs font-semibold text-white ">
-            Belum Kembali
+            {t.notReturned}
           </span>
         )}
         {pendingCount > 0 && (
           <span className="ml-3 mr-2 rounded bg-orange-400 px-5 py-1 text-xs font-semibold text-white ">
-            {pendingCount} User Sedang Dalam Pengajuan
+            {pendingCount} {t.usersPending}
           </span>
         )}
         {isAvailable && pendingCount === 0 ? (
           <span className="ml-3 mr-2 rounded bg-green-400 px-5 py-1 text-xs font-semibold text-white ">
-            Tersedia Sekarang
+            {t.availableNow}
           </span>
         ) : (
           bookings.length > 0 &&
@@ -103,7 +109,7 @@ export default function Card({
               key={index}
               className="ml-3 mr-2 rounded bg-yellow-400 px-5 py-1 text-xs font-semibold text-white "
             >
-              Booked {booking.startDateTime} - {booking.endDateTime}
+              {t.booked} {booking.startDateTime} - {booking.endDateTime}
             </span>
           ))
         )}

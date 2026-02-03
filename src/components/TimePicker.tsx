@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Clock } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/lib/translations";
 
 interface TimePickerProps {
   value?: string;
@@ -15,11 +17,14 @@ interface TimePickerProps {
 export default function TimePicker({
   value = "",
   onChange,
-  placeholder = "Pilih waktu",
+  placeholder,
   className = "",
   min = 5,
   max = 23,
 }: TimePickerProps) {
+  const { locale } = useLanguage();
+  const t = translations[locale].components.timePicker;
+  const displayPlaceholder = placeholder ?? t.placeholder;
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTime, setSelectedTime] = useState(value);
 
@@ -31,7 +36,7 @@ export default function TimePicker({
   };
 
   const formatDisplayTime = (time: string) => {
-    if (!time) return placeholder;
+    if (!time) return displayPlaceholder;
     return time + ":00";
   };
 
@@ -62,7 +67,7 @@ export default function TimePicker({
           <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 max-h-96 overflow-y-auto">
             <div className="p-4">
               <div className="text-sm font-medium text-gray-700 mb-3 text-center">
-                Pilih Waktu
+                {t.selectTime}
               </div>
 
               {/* Quick Time Options */}

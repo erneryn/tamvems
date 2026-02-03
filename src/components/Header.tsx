@@ -1,11 +1,18 @@
+'use client';
+
 import Link from 'next/link'
 import { Button } from 'flowbite-react'
 import { signOut, useSession } from 'next-auth/react'
 import { HiOutlineUser, HiMenu, HiX } from 'react-icons/hi'
 import { useState, useEffect } from 'react'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { translations } from '@/lib/translations'
+import LanguageSwitcher from './LanguageSwitcher'
 
 export default function Header({ isUserRoute }: { isUserRoute: boolean }) {
   const { data: session, status } = useSession()
+  const { locale } = useLanguage()
+  const t = translations[locale]
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   // Close mobile menu on escape key press
@@ -33,25 +40,26 @@ export default function Header({ isUserRoute }: { isUserRoute: boolean }) {
           </div>
           
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8">
+          <nav className="hidden md:flex items-center space-x-6">
+            <LanguageSwitcher />
             {isUserRoute && (
               <>
               <Link href="/dashboard" className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
-                Dashboard
+                {t.header.dashboard}
               </Link>
               <Link href="/my-request" className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
-                Pengajuan Saya
+                {t.header.myRequests}
               </Link>
               <Link href="/profile">
               <div className="flex items-center space-x-2 border-2 border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-100 transition-colors">
                 <HiOutlineUser className="h-4 w-4 text-gray-400" />
                 <span className="text-sm font-mono">
-                  {status === "loading" ? "Loading..." : session?.user?.email || "User"}
+                  {status === "loading" ? t.common.loading : session?.user?.email || t.common.user}
                 </span>
               </div>
               </Link>
               <Button color="dark" className="px-5" onClick={() => signOut({ callbackUrl: '/login' })}>
-                Logout
+                {t.common.logout}
               </Button>
               </>
             )}
@@ -64,7 +72,7 @@ export default function Header({ isUserRoute }: { isUserRoute: boolean }) {
               className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
               aria-expanded="false"
             >
-              <span className="sr-only">Open main menu</span>
+              <span className="sr-only">{t.header.openMenu}</span>
               {isMobileMenuOpen ? (
                 <HiX className="block h-6 w-6" aria-hidden="true" />
               ) : (
@@ -85,7 +93,9 @@ export default function Header({ isUserRoute }: { isUserRoute: boolean }) {
             />
             <div className="relative z-50 md:hidden">
               <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-gray-200 shadow-lg">
-              
+                <div className="px-3 py-2 border-b border-gray-100">
+                  <LanguageSwitcher variant="buttons" />
+                </div>
               {isUserRoute && (
                 <>
                   <Link 
@@ -93,14 +103,14 @@ export default function Header({ isUserRoute }: { isUserRoute: boolean }) {
                     className="text-gray-700 hover:text-blue-600 block px-3 py-2 text-base font-medium transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Dashboard
+                    {t.header.dashboard}
                   </Link>
                   <Link 
                     href="/my-request" 
                     className="text-gray-700 hover:text-blue-600 block px-3 py-2 text-base font-medium transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Pengajuan Saya
+                    {t.header.myRequests}
                   </Link>
                   <Link 
                     href="/profile" 
@@ -110,7 +120,7 @@ export default function Header({ isUserRoute }: { isUserRoute: boolean }) {
                     <div className="flex items-center space-x-2">
                       <HiOutlineUser className="h-4 w-4 text-gray-400" />
                       <span className="text-sm font-mono">
-                        {status === "loading" ? "Loading..." : session?.user?.email || "User"}
+                        {status === "loading" ? t.common.loading : session?.user?.email || t.common.user}
                       </span>
                     </div>
                   </Link>
@@ -124,7 +134,7 @@ export default function Header({ isUserRoute }: { isUserRoute: boolean }) {
                         signOut({ callbackUrl: '/login' });
                       }}
                     >
-                      Logout
+                      {t.common.logout}
                     </Button>
                   </div>
                 </>

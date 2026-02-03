@@ -6,6 +6,8 @@ import { VehicleRequest, User, Vehicle } from "@prisma/client";
 import dayjs from "dayjs";
 import { useState } from "react";
 import Image from "next/image";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/lib/translations";
 
 interface RequestData extends VehicleRequest {
   user: User;
@@ -23,6 +25,8 @@ export default function CheckOutModal({
   handleCheckOut,
   selectedRequest,
 }: CheckOutModalProps) {
+  const { locale } = useLanguage();
+  const t = translations[locale].components.checkOutModal;
   const [isLoading, setIsLoading] = useState(false);
 
   const handleConfirmCheckOut = async () => {
@@ -46,7 +50,7 @@ export default function CheckOutModal({
           <div className="flex items-center space-x-3">
             <HiTruck className="h-6 w-6 text-blue-600" />
             <h3 className="text-lg font-semibold text-gray-900">
-              Konfirmasi Kembalikan Kendaraan
+              {t.title}
             </h3>
           </div>
           <Button
@@ -64,10 +68,10 @@ export default function CheckOutModal({
         <div className="p-6 space-y-6">
           <div className="text-center">
             <p className="text-base text-gray-600 mb-4">
-              Apakah Anda yakin ingin kembalikan kendaraan ini?
+              {t.confirmMessage}
             </p>
             <p className="text-sm text-gray-500">
-              Tindakan ini akan menandai bahwa kendaraan sudah dikembalikan.
+              {t.confirmNote}
             </p>
           </div>
 
@@ -157,12 +161,11 @@ export default function CheckOutModal({
               </div>
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-yellow-800">
-                  Perhatian
+                  {t.warning}
                 </h3>
                 <div className="mt-2 text-sm text-yellow-700">
                   <p>
-                    Pastikan kendaraan dalam kondisi baik dan sudah benar kembali.
-                    Peringatkan peminjam untuk mengembalikan kendaraan pada waktu yang telah ditentukan.
+                    {t.warningText}
                   </p>
                 </div>
               </div>
@@ -178,7 +181,7 @@ export default function CheckOutModal({
             className="flex-1"
             disabled={isLoading}
           >
-            Batal
+            {t.cancel}
           </Button>
           <Button
             color="red"
@@ -189,10 +192,10 @@ export default function CheckOutModal({
             {isLoading ? (
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Processing...</span>
+                <span>{t.processing}</span>
               </div>
             ) : (
-              'Kembalikan'
+              t.return
             )}
           </Button>
         </div>

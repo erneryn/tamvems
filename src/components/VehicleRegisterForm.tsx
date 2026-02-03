@@ -4,11 +4,8 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { HiTruck, HiInformationCircle, HiUpload, HiX } from "react-icons/hi";
 import Image from "next/image";
-const vehicleTypes = [
-  { value: "BENSIN", label: "Bensin" },
-  { value: "DIESEL", label: "Diesel" },
-  { value: "ELECTRIC", label: "Listrik" },
-];
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/lib/translations";
 
 // Generate year options (current year back to 30 years)
 const currentYear = new Date().getFullYear();
@@ -16,6 +13,13 @@ const yearOptions = Array.from({ length: 31 }, (_, i) => currentYear - i);
 
 export default function VehicleRegisterForm() {
   const router = useRouter();
+  const { locale } = useLanguage();
+  const t = translations[locale].components.vehicleRegisterForm;
+  const vehicleTypes = [
+    { value: "BENSIN", label: t.fuelBensin },
+    { value: "DIESEL", label: t.fuelDiesel },
+    { value: "ELECTRIC", label: t.fuelElectric },
+  ];
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [plateInput, setPlateInput] = useState("");
@@ -35,7 +39,7 @@ export default function VehicleRegisterForm() {
       const data = await response.json();
       
       if (data.exists) {
-        setError("Nomor plat ini sudah terdaftar dalam sistem");
+        setError(t.plateExists);
       } else {
         setError(null);
       }
@@ -75,13 +79,13 @@ export default function VehicleRegisterForm() {
 
     // Validate file size (5MB)
     if (file.size > 5 * 1024 * 1024) {
-      setError("Ukuran file terlalu besar (maksimal 5MB)");
+      setError(t.fileTooBig);
       return;
     }
 
     // Validate file type
     if (!['image/jpeg', 'image/png', 'image/tiff'].includes(file.type)) {
-      setError("Format file tidak didukung (gunakan JPG, PNG, atau TIFF)");
+      setError(t.fileTypeInvalid);
       return;
     }
 
@@ -135,7 +139,7 @@ export default function VehicleRegisterForm() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Terjadi kesalahan saat mendaftarkan kendaraan');
+        throw new Error(data.error || t.registerError);
       }
 
       // Success! Redirect to vehicles list
@@ -143,7 +147,7 @@ export default function VehicleRegisterForm() {
       router.refresh(); // Refresh the page data
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Terjadi kesalahan');
+      setError(err instanceof Error ? err.message : t.genericError);
       setIsSubmitting(false);
     }
   };
@@ -155,8 +159,8 @@ export default function VehicleRegisterForm() {
           <HiTruck className="h-6 w-6 text-blue-600" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Daftarkan Kendaraan Baru</h1>
-          <p className="text-gray-600">Tambahkan kendaraan baru ke dalam sistem</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t.title}</h1>
+          <p className="text-gray-600">{t.subtitle}</p>
         </div>
       </div>
 
@@ -172,25 +176,25 @@ export default function VehicleRegisterForm() {
         {/* Vehicle Name */}
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-            Nama Kendaraan <span className="text-red-500">*</span>
+            {t.nameLabel} <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
             id="name"
             name="name"
-            placeholder="Contoh: Toyota Avanza 2020"
+            placeholder={t.namePlaceholder}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
             required
           />
           <p className="mt-1 text-xs text-gray-500">
-            Masukkan nama lengkap kendaraan termasuk merk dan model
+            {t.nameHint}
           </p>
         </div>
 
         {/* License Plate */}
         <div>
           <label htmlFor="plate" className="block text-sm font-medium text-gray-700 mb-2">
-            Nomor Plat <span className="text-red-500">*</span>
+            {t.plateLabel} <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
@@ -204,14 +208,14 @@ export default function VehicleRegisterForm() {
             required
           />
           <p className="mt-1 text-xs text-gray-500">
-            Format: XXYYYYXX (huruf dan angka tanpa spasi, akan diubah ke huruf besar otomatis)
+            {t.plateHint}
           </p>
         </div>
 
         {/* Vehicle Type */}
         <div>
           <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
-            Bahan Bakar <span className="text-red-500">*</span>
+            {t.fuelLabel} <span className="text-red-500">*</span>
           </label>
           <select
             id="type"
@@ -219,7 +223,7 @@ export default function VehicleRegisterForm() {
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
             required
           >
-            <option value="">Pilih tipe kendaraan</option>
+            <option value="">{t.fuelPlaceholder}</option>
             {vehicleTypes.map((type) => (
               <option key={type.value} value={type.value}>
                 {type.label}
@@ -227,14 +231,14 @@ export default function VehicleRegisterForm() {
             ))}
           </select>
           <p className="mt-1 text-xs text-gray-500">
-            Pilih jenis bahan bakar kendaraan
+            {t.fuelHint}
           </p>
         </div>
 
         {/* Vehicle Year */}
         <div>
           <label htmlFor="year" className="block text-sm font-medium text-gray-700 mb-2">
-            Tahun Kendaraan <span className="text-red-500">*</span>
+            {t.yearLabel} <span className="text-red-500">*</span>
           </label>
           <select
             id="year"
@@ -242,7 +246,7 @@ export default function VehicleRegisterForm() {
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
             required
           >
-            <option value="">Pilih tahun</option>
+            <option value="">{t.yearPlaceholder}</option>
             {yearOptions.map((year) => (
               <option key={year} value={year.toString()}>
                 {year}
@@ -250,31 +254,31 @@ export default function VehicleRegisterForm() {
             ))}
           </select>
           <p className="mt-1 text-xs text-gray-500">
-            Tahun pembuatan atau registrasi kendaraan
+            {t.yearHint}
           </p>
         </div>
 
         {/* Description */}
         <div>
           <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-            Deskripsi <span className="text-gray-400 font-normal">(opsional)</span>
+            {t.descriptionLabel} <span className="text-gray-400 font-normal">{t.descriptionOptional}</span>
           </label>
           <textarea
             id="description"
             name="description"
             rows={4}
-            placeholder="Tambahkan deskripsi kendaraan (opsional)..."
+            placeholder={t.descriptionPlaceholder}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-y min-h-[100px]"
           />
           <p className="mt-1 text-xs text-gray-500">
-            Deskripsi singkat atau catatan tentang kendaraan
+            {t.descriptionHint}
           </p>
         </div>
 
         {/* Vehicle Image */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Foto Kendaraan <span className="text-red-500">*</span>
+            {t.photoLabel} <span className="text-red-500">*</span>
           </label>
           
           <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
@@ -300,26 +304,26 @@ export default function VehicleRegisterForm() {
                 <>
                   <HiUpload className="mx-auto h-12 w-12 text-gray-400" />
                   <div className="flex text-sm text-gray-600">
-                    <label
-                      htmlFor="image"
-                      className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
-                    >
-                      <span>Upload foto</span>
-                      <input
-                        id="image"
-                        name="image"
-                        type="file"
-                        ref={fileInputRef}
-                        className="sr-only"
-                        accept="image/jpeg,image/png,image/tiff"
-                        onChange={handleImageChange}
-                        required
-                      />
-                    </label>
-                    <p className="pl-1">atau drag and drop</p>
+<label
+                        htmlFor="image"
+                        className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+                      >
+                        <span>{t.uploadPhoto}</span>
+                        <input
+                          id="image"
+                          name="image"
+                          type="file"
+                          ref={fileInputRef}
+                          className="sr-only"
+                          accept="image/jpeg,image/png,image/tiff"
+                          onChange={handleImageChange}
+                          required
+                        />
+                      </label>
+                    <p className="pl-1">{t.orDragDrop}</p>
                   </div>
                   <p className="text-xs text-gray-500">
-                    PNG, JPG, TIFF hingga 5MB
+                    {t.photoHint}
                   </p>
                 </>
               )}
@@ -334,7 +338,7 @@ export default function VehicleRegisterForm() {
             onClick={() => router.back()}
             className="px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200"
           >
-            Batal
+            {t.cancel}
           </button>
           
           <button
@@ -345,10 +349,10 @@ export default function VehicleRegisterForm() {
             {isSubmitting ? (
               <div className="flex items-center space-x-2">
                 <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                <span>Mendaftarkan...</span>
+                <span>{t.submitting}</span>
               </div>
             ) : (
-              "Daftarkan Kendaraan"
+              t.submit
             )}
           </button>
         </div>
@@ -356,12 +360,12 @@ export default function VehicleRegisterForm() {
 
       {/* Help Information */}
       <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="font-medium text-blue-900 mb-2">Informasi Penting:</h3>
+        <h3 className="font-medium text-blue-900 mb-2">{t.importantInfo}</h3>
         <ul className="text-sm text-blue-800 space-y-1">
-          <li>• Pastikan nomor plat kendaraan sudah benar dan belum terdaftar</li>
-          <li>• Nama kendaraan sebaiknya mencakup merk, model, dan tahun</li>
-          <li>• Foto kendaraan sebaiknya menampilkan kendaraan secara jelas</li>
-          <li>• Format foto yang didukung: JPG, PNG, atau TIFF (maks. 5MB)</li>
+          <li>• {t.info1}</li>
+          <li>• {t.info2}</li>
+          <li>• {t.info3}</li>
+          <li>• {t.info4}</li>
         </ul>
       </div>
     </div>

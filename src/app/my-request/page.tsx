@@ -5,6 +5,8 @@ import { useEffect, useState, useCallback } from "react";
 import { VehicleRequest } from "@prisma/client";
 import dayjs from "dayjs";
 import { filterRequests, RequestFilterOptions, getStatusOptions, getDateRangeOptions, getSortOptions } from "@/lib/filters";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/lib/translations";
 interface UserRequest extends VehicleRequest {
   isIdle?: boolean;
   buttonStatus?: string | null;
@@ -17,6 +19,8 @@ interface UserRequest extends VehicleRequest {
 }
 
 export default function PengajuanSaya() {
+  const { locale } = useLanguage();
+  const t = translations[locale].myRequest;
   const [userRequest, setUserRequest] = useState<UserRequest[]>([]);
   const [filteredRequest, setFilteredRequest] = useState<UserRequest[]>([]);
   const [filters, setFilters] = useState<RequestFilterOptions>({
@@ -26,10 +30,10 @@ export default function PengajuanSaya() {
   });
   const [useServerFiltering] = useState(false); // Can be made configurable later
 
-  // Get filter options
-  const statusOptions = getStatusOptions();
-  const dateRangeOptions = getDateRangeOptions();
-  const sortOptions = getSortOptions();
+  // Get filter options (translated by locale)
+  const statusOptions = getStatusOptions(locale);
+  const dateRangeOptions = getDateRangeOptions(locale);
+  const sortOptions = getSortOptions(locale);
 
   const fetchUserRequest = useCallback(async (filterParams?: RequestFilterOptions) => {
     // Build query parameters
@@ -85,7 +89,7 @@ export default function PengajuanSaya() {
   return (
     <div className="container mx-auto px-4 mt-6 md:mt-10">
       <h1 className="text-2xl md:text-3xl text-center font-bold uppercase">
-        Pengajuan Saya
+        {t.title}
       </h1>
       <div
         className="relative w-full lg:w-3/4 mx-auto border-2 border-gray-300 rounded-lg p-4 md:p-10 my-6 md:my-10 bg-cover bg-center bg-no-repeat"
@@ -141,7 +145,7 @@ export default function PengajuanSaya() {
           
           {/* Results count */}
           <div className="mb-4 text-sm text-gray-600">
-            Menampilkan {filteredRequest.length} dari {userRequest.length} pengajuan
+            {t.showingCount.replace("{count}", String(filteredRequest.length)).replace("{total}", String(userRequest.length))}
           </div>
           
           <div className="flex flex-col justify-between items-center gap-4 mx-0 md:mx-4 lg:mx-20">
@@ -165,8 +169,8 @@ export default function PengajuanSaya() {
               ))
             ) : (
               <div className="text-center py-8 text-gray-500">
-                <p className="text-lg">Tidak ada pengajuan yang sesuai dengan filter</p>
-                <p className="text-sm mt-2">Coba ubah filter untuk melihat hasil lainnya</p>
+                <p className="text-lg">{t.noMatch}</p>
+                <p className="text-sm mt-2">{t.noMatchHint}</p>
               </div>
             )}
           </div>

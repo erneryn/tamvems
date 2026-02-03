@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { Button, Card, Label, TextInput, Select, Alert } from "flowbite-react";
 import { HiUser, HiMail, HiPhone, HiKey, HiEye, HiEyeOff } from "react-icons/hi";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/lib/translations";
 
 interface UserProfile {
   id: string;
@@ -18,6 +20,8 @@ interface UserProfile {
 
 export default function Profile() {
   const { data: session, status } = useSession();
+  const { locale } = useLanguage();
+  const t = translations[locale].profile;
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -57,7 +61,7 @@ export default function Profile() {
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
-      setAlert({ type: 'error', message: 'Gagal memuat profil' });
+      setAlert({ type: 'error', message: t.loadError });
     } finally {
       setLoading(false);
     }
@@ -81,14 +85,14 @@ export default function Profile() {
         const updatedProfile = await response.json();
         setProfile(updatedProfile);
         setIsEditing(false);
-        setAlert({ type: 'success', message: 'Profil berhasil diperbarui' });
+        setAlert({ type: 'success', message: t.updateSuccess });
       } else {
         const error = await response.json();
-        setAlert({ type: 'error', message: error.error || 'Gagal memperbarui profil' });
+        setAlert({ type: 'error', message: error.error || t.updateError });
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      setAlert({ type: 'error', message: 'Terjadi kesalahan server' });
+      setAlert({ type: 'error', message: t.serverError });
     } finally {
       setLoading(false);
     }
@@ -98,12 +102,12 @@ export default function Profile() {
     e.preventDefault();
     
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setAlert({ type: 'error', message: 'Password baru dan konfirmasi tidak cocok' });
+      setAlert({ type: 'error', message: t.passwordMismatch });
       return;
     }
 
     if (passwordData.newPassword.length < 5) {
-      setAlert({ type: 'error', message: 'Password baru harus minimal 5 karakter' });
+      setAlert({ type: 'error', message: t.passwordMinLength });
       return;
     }
 
@@ -121,14 +125,14 @@ export default function Profile() {
 
       if (response.ok) {
         setPasswordData({ newPassword: "", confirmPassword: "" });
-        setAlert({ type: 'success', message: 'Password berhasil diubah' });
+        setAlert({ type: 'success', message: t.passwordUpdateSuccess });
       } else {
         const error = await response.json();
-        setAlert({ type: 'error', message: error.error || 'Gagal mengubah password' });
+        setAlert({ type: 'error', message: error.error || t.passwordUpdateError });
       }
     } catch (error) {
       console.error("Error changing password:", error);
-      setAlert({ type: 'error', message: 'Terjadi kesalahan server' });
+      setAlert({ type: 'error', message: t.serverError });
     } finally {
       setLoading(false);
     }
@@ -145,7 +149,7 @@ export default function Profile() {
   if (!session) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p>Anda harus login untuk mengakses halaman ini</p>
+        <p>{t.loginRequired}</p>
       </div>
     );
   }
@@ -153,8 +157,8 @@ export default function Profile() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Profil Saya</h1>
-        <p className="text-gray-600">Kelola informasi profil dan keamanan akun Anda</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t.title}</h1>
+        <p className="text-gray-600">{t.subtitle}</p>
       </div>
 
       {alert && (
@@ -171,20 +175,20 @@ export default function Profile() {
         {/* Profile Information Card */}
         <Card className="h-fit">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Informasi Profil</h2>
+            <h2 className="text-xl font-semibold text-gray-900">{t.profileInfo}</h2>
             <Button
               color="light"
               size="sm"
               onClick={() => setIsEditing(!isEditing)}
               disabled={loading}
             >
-              {isEditing ? 'Batal' : 'Edit'}
+              {isEditing ? translations[locale].common.cancel : t.editProfile}
             </Button>
           </div>
 
           <form onSubmit={handleUpdateProfile} className="space-y-4">
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t.email}</Label>
               <TextInput
                 id="email"
                 type="email"
@@ -193,12 +197,12 @@ export default function Profile() {
                 icon={HiMail}
                 className="mt-1"
               />
-              <p className="text-sm text-gray-500 mt-1">Email tidak dapat diubah</p>
+              <p className="text-sm text-gray-500 mt-1">{t.emailCannotChange}</p>
             </div>
 
 
             <div>
-              <Label htmlFor="name">Nama Lengkap</Label>
+              <Label htmlFor="name">{t.name}</Label>
               <TextInput
                 id="name"
                 value={formData.name}
@@ -211,7 +215,7 @@ export default function Profile() {
             </div>
 
             <div>
-              <Label htmlFor="phone">Nomor Telepon</Label>
+              <Label htmlFor="phone">{t.phone}</Label>
               <TextInput
                 id="phone"
                 value={formData.phone}
@@ -219,12 +223,12 @@ export default function Profile() {
                 disabled={!isEditing}
                 icon={HiPhone}
                 className="mt-1"
-                placeholder="Masukkan nomor telepon"
+                placeholder={t.phonePlaceholder}
               />
             </div>
 
             <div>
-              <Label htmlFor="division">Divisi</Label>
+              <Label htmlFor="division">{t.division}</Label>
               <Select
                 id="division"
                 value={formData.division}
@@ -255,13 +259,13 @@ export default function Profile() {
                 disabled
                 className="mt-1"
               />
-              <p className="text-sm text-gray-500 mt-1">Role tidak dapat diubah</p>
+              <p className="text-sm text-gray-500 mt-1">{t.roleCannotChange}</p>
             </div>
 
             {isEditing && (
               <div className="flex gap-2 pt-4">
                 <Button type="submit" disabled={loading}>
-                  {loading ? 'Menyimpan...' : 'Simpan Perubahan'}
+                  {loading ? t.saving : t.saveChanges}
                 </Button>
                 <Button
                   color="light"
@@ -275,7 +279,7 @@ export default function Profile() {
                     });
                   }}
                 >
-                  Batal
+                  {translations[locale].common.cancel}
                 </Button>
               </div>
             )}
@@ -286,11 +290,11 @@ export default function Profile() {
         
         <Card className="h-fit">
           <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Ubah Password</h2>
+            <h2 className="text-xl font-semibold text-gray-900">{t.changePassword}</h2>
             {!profile?.enablePasswordChanges && (
               <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                 <p className="text-sm text-yellow-800">
-                  Fitur ubah password belum diaktifkan untuk akun Anda. Hubungi administrator untuk mengaktifkannya.
+                  {t.changePasswordNote}
                 </p>
               </div>
             )}
@@ -299,7 +303,7 @@ export default function Profile() {
           <form onSubmit={handleChangePassword} className="space-y-4">
 
             <div>
-              <Label htmlFor="newPassword">Password Baru</Label>
+              <Label htmlFor="newPassword">{t.newPassword}</Label>
               <div className="relative mt-1">
                 <TextInput
                   id="newPassword"
@@ -319,11 +323,11 @@ export default function Profile() {
                   {showPassword ? <HiEyeOff size={20} /> : <HiEye size={20} />}
                 </button>
               </div>
-              <p className="text-sm text-gray-500 mt-1">Password minimal 5 karakter</p>
+              <p className="text-sm text-gray-500 mt-1">{t.minPasswordHint}</p>
             </div>
 
             <div>
-              <Label htmlFor="confirmPassword">Konfirmasi Password Baru</Label>
+              <Label htmlFor="confirmPassword">{t.confirmPassword}</Label>
               <TextInput
                 id="confirmPassword"
                 type="password"
@@ -342,7 +346,7 @@ export default function Profile() {
                 disabled={loading || !passwordData.newPassword || !passwordData.confirmPassword}
                 className="w-full"
               >
-                {loading ? 'Mengubah Password...' : 'Ubah Password'}
+                {loading ? t.changingPassword : t.updatePassword}
               </Button>
             )}
           </form>

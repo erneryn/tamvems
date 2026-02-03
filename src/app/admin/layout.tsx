@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, ReactNode, useEffect } from "react";
+import { useState, ReactNode, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
@@ -17,6 +17,9 @@ import {
   HiLogout,
   HiUserCircle
 } from "react-icons/hi";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/lib/translations";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -24,22 +27,28 @@ interface AdminLayoutProps {
 
 interface NavItem {
   href: string;
-  label: string;
+  labelKey: keyof typeof translations.id.admin.nav;
   icon: React.ComponentType<{ className?: string }>;
 }
 
-const navItems: NavItem[] = [
-  { href: "/admin/dashboard", label: "Dashboard", icon: HiHome },
-  { href: "/admin/users", label: "Kelola Pengguna", icon: HiUsers },
-  { href: "/admin/requests", label: "Kelola Pengajuan", icon: HiClipboardList },
-  { href: "/admin/vehicles", label: "Kelola Kendaraan", icon: HiTruck },
-  { href: "/admin/report", label: "Laporan", icon: HiChartBar },
-  { href: "/admin/settings", label: "Pengaturan", icon: HiCog },
+const navItemKeys: NavItem[] = [
+  { href: "/admin/dashboard", labelKey: "dashboard", icon: HiHome },
+  { href: "/admin/users", labelKey: "users", icon: HiUsers },
+  { href: "/admin/requests", labelKey: "requests", icon: HiClipboardList },
+  { href: "/admin/vehicles", labelKey: "vehicles", icon: HiTruck },
+  { href: "/admin/report", labelKey: "report", icon: HiChartBar },
+  { href: "/admin/settings", labelKey: "settings", icon: HiCog },
 ];
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
+  const { locale } = useLanguage();
+  const t = translations[locale].admin;
+  const navItems = useMemo(
+    () => navItemKeys.map((item) => ({ ...item, label: t.nav[item.labelKey] })),
+    [t]
+  );
 
   const { data: session, status } = useSession();
 
@@ -73,7 +82,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Memverifikasi akses...</p>
+          <p className="mt-4 text-gray-600">{t.verifyingAccess}</p>
         </div>
       </div>
     );
@@ -85,7 +94,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
-          <p className="mt-4 text-red-600">Tunggu sebentar...</p>
+          <p className="mt-4 text-red-600">{t.pleaseWait}</p>
         </div>
       </div>
     );
@@ -108,7 +117,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Sidebar */}
       <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out lg:translate-x-0 flex flex-col`}>
         <div className="flex items-center justify-between h-16 px-6 bg-blue-600">
-          <h1 className="text-xl font-bold text-white">TAMVEMS Admin</h1>
+          <h1 className="text-xl font-bold text-white">{t.layout.appTitle}</h1>
           <button
             className="text-white lg:hidden"
             onClick={() => setSidebarOpen(false)}
@@ -125,7 +134,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-900">
-                Admin
+                {t.admin}
               </p>
                 <p className="text-xs text-gray-500">{session?.user?.email}</p>
             </div>
@@ -158,7 +167,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             })}
           </ul>
         </nav>
-
+       
         {/* Logout Section */}
         <div className="absolute bottom-0 left-0 right-0 p-3">
           <button 
@@ -166,7 +175,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             className="flex items-center w-full px-3 py-3 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200"
           >
             <HiLogout className="mr-3 h-5 w-5 text-gray-400" />
-            Keluar
+            {translations[locale].common.logout}
           </button>
         </div>
       </div>
@@ -182,7 +191,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             >
               <HiMenu className="h-6 w-6" />
             </button>
-            <h1 className="text-lg font-semibold text-gray-900">TAMVEMS</h1>
+            <h1 className="text-lg font-semibold text-gray-900">{t.layout.mobileTitle}</h1>
             <div></div> {/* Spacer */}
           </div>
         </header>

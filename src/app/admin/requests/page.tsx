@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, Suspense, useMemo } from "react";
 import {
   Card,
   Table,
@@ -21,6 +21,9 @@ import dayjs from "dayjs";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import CheckOutModal from "@/components/CheckOutModal";
 import { useSearchParams } from "next/navigation";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/lib/translations";
+import { getStatusOptions } from "@/lib/filters";
 
 interface RequestData extends VehicleRequest {
   user: User;
@@ -30,18 +33,30 @@ interface RequestData extends VehicleRequest {
 type SortField = "startDateTime" | "endDateTime" | "createdAt";
 type SortOrder = "asc" | "desc";
 
-const statusLabels = {
-  PENDING: { label: "Menunggu", color: "warning" },
-  APPROVED: { label: "Disetujui", color: "success" },
-  REJECTED: { label: "Ditolak", color: "failure" },
-  IN_USE: { label: "Sedang Digunakan", color: "info" },
-  COMPLETED: { label: "Selesai", color: "gray" },
-  CANCELLED: { label: "Dibatalkan", color: "dark" },
-  OVERDUE: { label: "Belum Kembali", color: "failure" },
-} as const;
+const statusColors: Record<string, "warning" | "success" | "failure" | "info" | "gray" | "dark"> = {
+  PENDING: "warning",
+  APPROVED: "success",
+  REJECTED: "failure",
+  IN_USE: "info",
+  COMPLETED: "gray",
+  CANCELLED: "dark",
+  OVERDUE: "failure",
+};
 
 function AdminRequestsContent() {
   const searchParams = useSearchParams();
+  const { locale } = useLanguage();
+  const t = translations[locale].admin.requests;
+  const filterT = translations[locale].filters;
+  const statusOptions = useMemo(() => getStatusOptions(locale), [locale]);
+  const statusLabels = useMemo(() => {
+    const map: Record<string, { label: string; color: "warning" | "success" | "failure" | "info" | "gray" | "dark" }> = {};
+    statusOptions.forEach((opt) => {
+      if (opt.value && opt.value !== "ALL") map[opt.value] = { label: opt.label, color: (statusColors[opt.value] ?? "gray") as "gray" };
+    });
+    map.OVERDUE = { label: t.statusOverdue, color: "failure" };
+    return map;
+  }, [locale, statusOptions, t.statusOverdue]);
 
   const [requests, setRequests] = useState<RequestData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -275,14 +290,14 @@ function AdminRequestsContent() {
         target="_blank"
         rel="noopener noreferrer"
         className="inline-flex items-center text-blue-600 hover:text-blue-800 hover:underline"
-        title={isPdf ? "Lihat PDF" : "Lihat Gambar"}
+        title={isPdf ? t.viewPdf : t.viewImage}
       >
         {isPdf ? (
           <HiDocumentText className="w-5 h-5" />
         ) : (
           <HiPhotograph className="w-5 h-5" />
         )}
-        <span className="ml-1 text-xs">Lihat</span>
+        <span className="ml-1 text-xs">{t.view}</span>
       </a>
     );
   };
@@ -292,13 +307,13 @@ function AdminRequestsContent() {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <HiClipboardList className="h-8 w-8 text-blue-600" />
-          <h1 className="text-3xl font-bold text-gray-900">Kelola Pengajuan</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{t.title}</h1>
         </div>
 
         {/* Status Filter */}
         <div className="flex items-center space-x-4">
           <label className="text-sm font-medium text-gray-700">
-            Filter Status:
+            {t.filterStatus}
           </label>
           <Select
             value={statusFilter}
@@ -307,13 +322,13 @@ function AdminRequestsContent() {
             }
             className="w-48"
           >
-            <option value="ALL">Semua Status</option>
-            <option value="PENDING">Menunggu</option>
-            <option value="APPROVED">Disetujui</option>
-            <option value="REJECTED">Ditolak</option>
-            <option value="COMPLETED">Selesai</option>
-            <option value="CANCELLED">Dibatalkan</option>
-            <option value="OVERDUE">Belum Kembali</option>
+            <option value="ALL">{filterT.statusAll}</option>
+            <option value="PENDING">{filterT.statusPending}</option>
+            <option value="APPROVED">{filterT.statusApproved}</option>
+            <option value="REJECTED">{filterT.statusRejected}</option>
+            <option value="COMPLETED">{filterT.statusCompleted}</option>
+            <option value="CANCELLED">{filterT.statusCancelled}</option>
+            <option value="OVERDUE">{t.statusOverdue}</option>
           </Select>
         </div>
       </div>
@@ -331,19 +346,19 @@ function AdminRequestsContent() {
                 <TableHead className="text-xs text-gray-700 uppercase bg-gray-50">
                   <TableRow>
                     <TableHeadCell scope="col" className="px-6 py-3">
-                      Pemohon
+                      {t.applicant}
                     </TableHeadCell>
                     <TableHeadCell scope="col" className="px-6 py-3">
-                      Kendaraan
+                      {translations[locale].admin.dashboard.vehicle}
                     </TableHeadCell>
                     <TableHeadCell scope="col" className="px-6 py-3 max-w-[200px]">
-                      Deskripsi
+                      {translations[locale].admin.dashboard.description}
                     </TableHeadCell>
                     <TableHeadCell scope="col" className="px-6 py-3">
-                      Tujuan
+                      {translations[locale].admin.dashboard.destination}
                     </TableHeadCell>
                     <TableHeadCell scope="col" className="px-6 py-3">
-                      Dokumen
+                      {t.document}
                     </TableHeadCell>
                     <TableHeadCell
                       scope="col"
@@ -351,7 +366,7 @@ function AdminRequestsContent() {
                       onClick={() => handleSort("startDateTime")}
                     >
                       <div className="flex items-center">
-                        Mulai
+                        {t.start}
                         {renderSortIcon("startDateTime")}
                       </div>
                     </TableHeadCell>
@@ -361,15 +376,15 @@ function AdminRequestsContent() {
                       onClick={() => handleSort("endDateTime")}
                     >
                       <div className="flex items-center">
-                        Selesai
+                        {t.end}
                         {renderSortIcon("endDateTime")}
                       </div>
                     </TableHeadCell>
                     <TableHeadCell scope="col" className="px-6 py-3">
-                      Status
+                      {t.status}
                     </TableHeadCell>
                     <TableHeadCell scope="col" className="px-6 py-3">
-                      Aksi
+                      {t.action}
                     </TableHeadCell>
                   </TableRow>
                 </TableHead>
@@ -436,7 +451,7 @@ function AdminRequestsContent() {
                                 pill
                                 onClick={() => openConfirmationModal(request)}
                               >
-                                Tindakan
+                                {t.action}
                               </Button>
                             </div>
                           )}
@@ -448,7 +463,7 @@ function AdminRequestsContent() {
                                 color="red"
                                 onClick={() => openCheckOutConfirmationModal(request)}
                               >
-                                Kembalikan
+                                {t.return}
                               </Button>
                           )}
                         </TableCell>
@@ -460,7 +475,7 @@ function AdminRequestsContent() {
                         <div className="flex flex-col items-center space-y-2">
                           <HiClipboardList className="h-12 w-12 text-gray-300" />
                           <p className="text-gray-500">
-                            Tidak ada pengajuan ditemukan
+                            {t.noRequests}
                           </p>
                         </div>
                       </TableCell>

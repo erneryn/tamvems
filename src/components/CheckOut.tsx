@@ -1,6 +1,10 @@
+"use client";
+
 import { Button } from "flowbite-react";
 import { useState } from "react";
 import { HiCheck, HiX } from "react-icons/hi";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/lib/translations";
 
 interface VehicleUsageInfo {
   requestId: string;
@@ -17,6 +21,8 @@ interface CheckOutProps {
 }
 
 export default function CheckOutInfo({ type, vehicleInfo, onReturnSuccess }: CheckOutProps) {
+  const { locale } = useLanguage();
+  const t = translations[locale].components.checkOut;
   const [isReturning, setIsReturning] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
@@ -24,7 +30,7 @@ export default function CheckOutInfo({ type, vehicleInfo, onReturnSuccess }: Che
 
   const handleReturnVehicle = async () => {
     if (!vehicleInfo?.requestId) {
-      setErrorMessage("Informasi kendaraan tidak ditemukan");
+      setErrorMessage(t.vehicleNotFound);
       setShowError(true);
       return;
     }
@@ -59,12 +65,12 @@ export default function CheckOutInfo({ type, vehicleInfo, onReturnSuccess }: Che
         }, 3000);
       } else {
         const errorData = await response.json();
-        setErrorMessage(errorData.error || 'Gagal mengembalikan kendaraan');
+        setErrorMessage(errorData.error || t.returnFailed);
         setShowError(true);
       }
     } catch (error) {
       console.error('Error returning vehicle:', error);
-      setErrorMessage('Terjadi kesalahan jaringan');
+      setErrorMessage(t.networkError);
       setShowError(true);
     } finally {
       setIsReturning(false);
@@ -74,7 +80,7 @@ export default function CheckOutInfo({ type, vehicleInfo, onReturnSuccess }: Che
   // Default vehicle info if not provided (for backward compatibility)
   const defaultVehicleInfo = vehicleInfo || {
     requestId: '',
-    vehicleName: 'Kendaraan',
+    vehicleName: locale === 'id' ? 'Kendaraan' : 'Vehicle',
     vehiclePlate: 'N/A',
     destination: ''
   };
@@ -97,10 +103,10 @@ export default function CheckOutInfo({ type, vehicleInfo, onReturnSuccess }: Che
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2">
                     <h2 className="text-lg md:text-xl font-bold text-green-800">
-                      Sedang Menggunakan Kendaraan
+                      {t.usingVehicle}
                     </h2>
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      Aktif
+                      {t.active}
                     </span>
                   </div>
                   <div className="space-y-1">
@@ -108,10 +114,10 @@ export default function CheckOutInfo({ type, vehicleInfo, onReturnSuccess }: Che
                       📍 {defaultVehicleInfo.vehiclePlate}
                     </p>
                     <p className="text-sm text-gray-600">
-                      <span className="font-medium">Tujuan:</span> {defaultVehicleInfo.destination}
+                      <span className="font-medium">{t.destination}:</span> {defaultVehicleInfo.destination}
                     </p>
                     <p className="text-xs text-gray-500">
-                      💡 Silakan kembalikan kendaraan setelah selesai menggunakannya
+                      💡 {t.returnHint}
                     </p>
                   </div>
                 </div>
@@ -131,14 +137,14 @@ export default function CheckOutInfo({ type, vehicleInfo, onReturnSuccess }: Che
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      Mengembalikan...
+                      {t.returning}
                     </span>
                   ) : (
                     <span className="flex items-center gap-2">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                       </svg>
-                      Kembalikan Kendaraan
+                      {t.returnVehicle}
                     </span>
                   )}
                 </Button>
@@ -164,10 +170,10 @@ export default function CheckOutInfo({ type, vehicleInfo, onReturnSuccess }: Che
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2">
                     <h2 className="text-lg md:text-xl font-bold text-red-800">
-                      Kendaraan Melewati Waktu
+                      {t.vehicleOverdue}
                     </h2>
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                      Terlambat
+                      {t.late}
                     </span>
                   </div>
                   <div className="space-y-1">
@@ -175,17 +181,17 @@ export default function CheckOutInfo({ type, vehicleInfo, onReturnSuccess }: Che
                       📍 {defaultVehicleInfo.vehiclePlate}
                     </p>
                     <p className="text-sm text-gray-600">
-                      <span className="font-medium">Tujuan:</span> {defaultVehicleInfo.destination}
+                      <span className="font-medium">{t.destination}:</span> {defaultVehicleInfo.destination}
                     </p>
                     {vehicleInfo?.minutesOverdue && (
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-semibold text-red-600 bg-red-100 px-2 py-1 rounded-lg">
-                          ⏰ Terlambat {vehicleInfo.minutesOverdue} menit
+                          ⏰ {t.lateMinutes.replace("{n}", String(vehicleInfo.minutesOverdue))}
                         </p>
                       </div>
                     )}
                     <p className="text-xs text-gray-500">
-                      ⚠️ Silakan segera kembalikan kendaraan untuk menghindari penalty
+                      ⚠️ {t.returnNowHint}
                     </p>
                   </div>
                 </div>
@@ -205,14 +211,14 @@ export default function CheckOutInfo({ type, vehicleInfo, onReturnSuccess }: Che
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      Mengembalikan...
+                      {t.returning}
                     </span>
                   ) : (
                     <span className="flex items-center gap-2">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      Kembalikan Sekarang
+                      {t.returnNow}
                     </span>
                   )}
                 </Button>
@@ -235,10 +241,10 @@ export default function CheckOutInfo({ type, vehicleInfo, onReturnSuccess }: Che
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-semibold text-gray-900">
-                    Berhasil!
+                    {t.success}
                   </h3>
                   <p className="text-sm text-gray-600 mt-1">
-                    Kendaraan berhasil dikembalikan
+                    {t.successMessage}
                   </p>
                 </div>
                 <button
@@ -267,7 +273,7 @@ export default function CheckOutInfo({ type, vehicleInfo, onReturnSuccess }: Che
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-semibold text-gray-900">
-                    Gagal!
+                    {t.failed}
                   </h3>
                   <p className="text-sm text-gray-600 mt-1">
                     {errorMessage}

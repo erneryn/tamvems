@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   Button,
@@ -25,6 +25,8 @@ import {
   HiX,
 } from "react-icons/hi";
 import Image from "next/image";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/lib/translations";
 
 interface Vehicle {
   id: string;
@@ -38,16 +40,18 @@ interface Vehicle {
   createdAt: string;
 }
 
-const typeLabels = {
-  BENSIN: "Bensin",
-  DIESEL: "Diesel",
-  ELECTRIC: "Listrik",
-};
-
 export default function VehicleDetailPage() {
   const params = useParams();
   const router = useRouter();
   const vehicleId = params.id as string;
+  const { locale } = useLanguage();
+  const t = translations[locale].admin.vehicleDetail;
+  const vehiclesT = translations[locale].admin.vehicles;
+  const typeLabels = useMemo(() => ({
+    BENSIN: vehiclesT.fuelBensin,
+    DIESEL: vehiclesT.fuelDiesel,
+    ELECTRIC: vehiclesT.fuelElectric,
+  }), [locale, vehiclesT.fuelBensin, vehiclesT.fuelDiesel, vehiclesT.fuelElectric]);
 
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -86,10 +90,8 @@ export default function VehicleDetailPage() {
           year: vehicleData.year,
           description: vehicleData.description ?? "",
         });
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to load vehicle"
-        );
+      } catch {
+        setError(t.loadError);
       } finally {
         setIsLoading(false);
       }
@@ -98,7 +100,7 @@ export default function VehicleDetailPage() {
     if (vehicleId) {
       fetchVehicle();
     }
-  }, [vehicleId]);
+  }, [vehicleId, t.loadError]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -117,13 +119,13 @@ export default function VehicleDetailPage() {
 
     // Validate file size (5MB)
     if (file.size > 5 * 1024 * 1024) {
-      setError("Ukuran file terlalu besar (maksimal 5MB)");
+      setError(t.fileTooBig);
       return;
     }
 
     // Validate file type
     if (!['image/jpeg', 'image/png', 'image/tiff'].includes(file.type)) {
-      setError("Format file tidak didukung (gunakan JPG, PNG, atau TIFF)");
+      setError(t.fileTypeInvalid);
       return;
     }
 
@@ -185,12 +187,12 @@ export default function VehicleDetailPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update vehicle");
+        throw new Error(t.updateError);
       }
 
       const updatedVehicle = await response.json();
       setVehicle(updatedVehicle);
-      setSuccess("Kendaraan berhasil diperbarui!");
+      setSuccess(t.updateSuccess);
       
       // Clear file selection after successful update
       setSelectedFile(null);
@@ -201,10 +203,8 @@ export default function VehicleDetailPage() {
       
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(null), 3000);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to update vehicle"
-      );
+    } catch {
+      setError(t.updateError);
     } finally {
       setIsUpdating(false);
     }
@@ -220,15 +220,13 @@ export default function VehicleDetailPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to delete vehicle");
+        throw new Error(t.deleteError);
       }
 
       // Redirect to vehicles page with success message
       router.push("/admin/vehicles?success=deleted");
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to delete vehicle"
-      );
+    } catch {
+      setError(t.deleteError);
       setIsDeleting(false);
     }
     setShowDeleteModal(false);
@@ -250,7 +248,7 @@ export default function VehicleDetailPage() {
         </Alert>
         <Button href="/admin/vehicles">
           <HiArrowLeft className="h-4 w-4 mr-2" />
-          Kembali ke Daftar Kendaraan
+          {t.backToList}
         </Button>
       </div>
     );
@@ -266,12 +264,12 @@ export default function VehicleDetailPage() {
             onClick={() => router.back()}
           >
             <HiArrowLeft className="h-4 w-4 mr-2" />
-            Kembali
+            {t.back}
           </Button>
           <div className="flex items-center space-x-2">
             <HiTruck className="h-6 w-6 text-blue-600" />
             <h1 className="text-2xl font-bold text-gray-900">
-              Detail Kendaraan
+              {t.title}
             </h1>
           </div>
         </div>
@@ -281,7 +279,7 @@ export default function VehicleDetailPage() {
           disabled={isDeleting}
         >
           <HiTrash className="h-4 w-4 mr-2" />
-          Hapus Kendaraan
+          {t.deleteVehicle}
         </Button>
       </div>
 
@@ -302,7 +300,7 @@ export default function VehicleDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Vehicle Image */}
         <Card className="h-fit">
-          <h3 className="text-lg font-semibold mb-4">Foto Kendaraan</h3>
+          <h3 className="text-lg font-semibold mb-4">{t.vehiclePhoto}</h3>
           {vehicle?.image ? (
             <div className="relative aspect-video rounded-lg overflow-hidden">
               <Image
@@ -321,10 +319,10 @@ export default function VehicleDetailPage() {
 
         {/* Edit Form */}
         <Card>
-          <h3 className="text-lg font-semibold mb-4">Edit Kendaraan</h3>
+          <h3 className="text-lg font-semibold mb-4">{t.editVehicle}</h3>
           <form onSubmit={handleUpdate} className="space-y-4">
             <div>
-              <Label htmlFor="name">Nama Kendaraan</Label>
+              <Label htmlFor="name">{t.nameLabel}</Label>
               <TextInput
                 id="name"
                 name="name"
@@ -336,7 +334,7 @@ export default function VehicleDetailPage() {
             </div>
 
             <div>
-              <Label htmlFor="plate">Plat Nomor</Label>
+              <Label htmlFor="plate">{t.plateLabel}</Label>
               <TextInput
                 id="plate"
                 name="plate"
@@ -348,7 +346,7 @@ export default function VehicleDetailPage() {
             </div>
 
             <div>
-              <Label htmlFor="type">Bahan Bakar</Label>
+              <Label htmlFor="type">{t.fuelType}</Label>
               <Select
                 id="type"
                 name="type"
@@ -356,14 +354,14 @@ export default function VehicleDetailPage() {
                 onChange={handleInputChange}
                 required
               >
-                <option value="BENSIN">Bensin</option>
-                <option value="DIESEL">Diesel</option>
-                <option value="ELECTRIC">Listrik</option>
+                <option value="BENSIN">{typeLabels.BENSIN}</option>
+                <option value="DIESEL">{typeLabels.DIESEL}</option>
+                <option value="ELECTRIC">{typeLabels.ELECTRIC}</option>
               </Select>
             </div>
 
             <div>
-              <Label htmlFor="year">Tahun</Label>
+              <Label htmlFor="year">{t.yearLabel}</Label>
               <TextInput
                 id="year"
                 name="year"
@@ -375,14 +373,14 @@ export default function VehicleDetailPage() {
             </div>
 
             <div>
-              <Label htmlFor="description">Deskripsi (opsional)</Label>
+              <Label htmlFor="description">{t.descriptionOptional}</Label>
               <textarea
                 id="description"
                 name="description"
                 rows={4}
                 value={formData.description}
                 onChange={handleInputChange}
-                placeholder="Tambahkan deskripsi kendaraan..."
+                placeholder={t.descriptionPlaceholder}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-y min-h-[100px]"
               />
             </div>
@@ -390,7 +388,7 @@ export default function VehicleDetailPage() {
             {/* Vehicle Image Upload */}
             <div>
               <Label className="block text-sm font-medium text-gray-700 mb-2">
-                Foto Kendaraan
+                {t.vehiclePhoto}
               </Label>
               
               <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
@@ -420,7 +418,7 @@ export default function VehicleDetailPage() {
                           htmlFor="image-upload"
                           className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
                         >
-                          <span>Upload foto baru</span>
+                          <span>{t.uploadNewPhoto}</span>
                           <input
                             id="image-upload"
                             name="image-upload"
@@ -431,10 +429,10 @@ export default function VehicleDetailPage() {
                             onChange={handleImageChange}
                           />
                         </label>
-                        <p className="pl-1">atau drag and drop</p>
+                        <p className="pl-1">{t.orDragDrop}</p>
                       </div>
                       <p className="text-xs text-gray-500">
-                        PNG, JPG, TIFF hingga 5MB
+                        {t.photoHint}
                       </p>
                     </>
                   )}
@@ -442,7 +440,7 @@ export default function VehicleDetailPage() {
               </div>
               {!imagePreview && !selectedFile && (
                 <p className="mt-2 text-sm text-gray-500">
-                  Kosongkan jika tidak ingin mengubah foto kendaraan
+                  {t.clearPhotoHint}
                 </p>
               )}
             </div>
@@ -455,12 +453,12 @@ export default function VehicleDetailPage() {
               {isUpdating ? (
                 <>
                   <Spinner size="sm" className="mr-2" />
-                  Menyimpan...
+                  {t.saving}
                 </>
               ) : (
                 <>
                   <HiSave className="h-4 w-4 mr-2" />
-                  Simpan Perubahan
+                  {t.saveChanges}
                 </>
               )}
             </Button>
@@ -470,31 +468,31 @@ export default function VehicleDetailPage() {
 
       {/* Vehicle Info */}
       <Card>
-        <h3 className="text-lg font-semibold mb-4">Informasi Kendaraan</h3>
+        <h3 className="text-lg font-semibold mb-4">{t.vehicleInfo}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <p className="text-sm text-gray-500">ID Kendaraan</p>
+            <p className="text-sm text-gray-500">{t.vehicleId}</p>
             <p className="font-mono text-sm">{vehicle?.id}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Status</p>
-            <p className={`font-medium ${vehicle?.isActive ? 'text-green-600' : 'text-gray-600'}`}>
-              {vehicle?.isActive ? 'Aktif' : 'Nonaktif'}
+            <p className="text-sm text-gray-500">{t.status}</p>
+            <p className={`font-medium ${vehicle?.isActive ? "text-green-600" : "text-gray-600"}`}>
+              {vehicle?.isActive ? t.active : t.inactive}
             </p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Tipe Saat Ini</p>
+            <p className="text-sm text-gray-500">{t.currentType}</p>
             <p className="font-medium">{vehicle?.type && typeLabels[vehicle.type]}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Dibuat Pada</p>
+            <p className="text-sm text-gray-500">{t.createdAt}</p>
             <p className="text-sm">
-              {vehicle?.createdAt && new Date(vehicle.createdAt).toLocaleString('id-ID')}
+              {vehicle?.createdAt && new Date(vehicle.createdAt).toLocaleString(locale === "id" ? "id-ID" : "en-GB")}
             </p>
           </div>
           {(vehicle?.description ?? "").trim() && (
             <div className="md:col-span-2">
-              <p className="text-sm text-gray-500">Deskripsi</p>
+              <p className="text-sm text-gray-500">{t.description}</p>
               <p className="text-sm text-gray-700 whitespace-pre-wrap mt-1">{vehicle?.description}</p>
             </div>
           )}
@@ -506,17 +504,17 @@ export default function VehicleDetailPage() {
         <ModalHeader>
           <div className="flex items-center space-x-2">
             <HiExclamationCircle className="h-6 w-6 text-red-500" />
-            <span>Konfirmasi Hapus</span>
+            <span>{t.confirmDelete}</span>
           </div>
         </ModalHeader>
         <ModalBody>
           <p className="text-gray-600">
-            Apakah Anda yakin ingin menghapus kendaraan{" "}
-            <span className="font-semibold">{vehicle?.name}</span> dengan plat nomor{" "}
-            <span className="font-semibold">{vehicle?.plate}</span>?
+            {t.confirmDeleteVehicleMessage
+              .replace("{name}", vehicle?.name ?? "")
+              .replace("{plate}", vehicle?.plate ?? "")}
           </p>
           <p className="text-sm text-red-600 mt-2">
-            Tindakan ini akan menonaktifkan kendaraan dan tidak dapat dibatalkan.
+            {t.deleteVehicleWarning}
           </p>
         </ModalBody>
         <ModalFooter>
@@ -525,7 +523,7 @@ export default function VehicleDetailPage() {
             onClick={() => setShowDeleteModal(false)}
             disabled={isDeleting}
           >
-            Batal
+            {t.cancel}
           </Button>
           <Button
             color="failure"
@@ -535,12 +533,12 @@ export default function VehicleDetailPage() {
             {isDeleting ? (
               <>
                 <Spinner size="sm" className="mr-2" />
-                Menghapus...
+                {t.deleting}
               </>
             ) : (
               <>
                 <HiTrash className="h-4 w-4 mr-2" />
-                Hapus Kendaraan
+                {t.deleteVehicle}
               </>
             )}
           </Button>

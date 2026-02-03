@@ -11,9 +11,13 @@ import EmptyState from "@/components/EmptyState";
 import Loading from "@/components/Loading";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/lib/translations";
 
 export default function Dashboard() {
   const router = useRouter();
+  const { locale } = useLanguage();
+  const t = translations[locale].dashboard;
   const minHour = dayjs().get("hour");
   const [isUsingVehicle, setIsUsingVehicle] = useState(false);
   const [isOverlapping, setIsOverlapping] = useState(false);
@@ -119,10 +123,10 @@ export default function Dashboard() {
       <div className="sm:w-3/4 w-11/12 mx-auto flex flex-col gap-6  border-2 border-gray-300 rounded-lg mt-10 items-center p-5">
         <div className="flex flex-col text-center gap-2">
           <h1 className="text-2xl sm:text-5xl font-bold">
-            Cari Ketersediaan Kendaraan
+            {t.title}
           </h1>
           <p className="sm:text-xl text-sm text-gray-500">
-            Temukan kendaraan yang tersedia sesuai tanggal dan waktu
+            {t.subtitle}
           </p>
         </div>
 
@@ -134,12 +138,12 @@ export default function Dashboard() {
               htmlFor="tanggal"
               className="text-sm font-medium text-gray-700"
             >
-              Tanggal Penggunaan
+              {t.dateLabel}
             </label>
             <Datepicker
               minDate={new Date()}
               sizing="lg"
-              placeholder="Pilih tanggal"
+              placeholder={t.datePlaceholder}
               value={selectedDate}
               onChange={setSelectedDate}
             />
@@ -152,10 +156,10 @@ export default function Dashboard() {
                 htmlFor="waktu_mulai"
                 className="text-sm font-medium text-gray-700"
               >
-                Waktu Mulai
+                {t.startTime}
               </label>
               <TimePicker
-                placeholder="Pilih waktu mulai"
+                placeholder={t.startTimePlaceholder}
                 value={selectedStartTime}
                 onChange={setSelectedStartTime}
               />
@@ -166,11 +170,11 @@ export default function Dashboard() {
                 htmlFor="waktu_selesai"
                 className="text-sm font-medium text-gray-700"
               >
-                Waktu Selesai
+                {t.endTime}
               </label>
               <TimePicker
                 min={parseInt(selectedStartTime) + 1}
-                placeholder="Pilih waktu selesai"
+                placeholder={t.endTimePlaceholder}
                 value={selectedEndTime}
                 onChange={setSelectedEndTime}
               />
@@ -183,12 +187,12 @@ export default function Dashboard() {
             onClick={handleSearch}
             className="w-full bg-gradient-to-br from-purple-600 to-blue-500 "
           >
-            {isLoading ? "Mencari..." : "Cari Kendaraan Tersedia"}
+            {isLoading ? t.searching : t.searchButton}
           </Button>
         </div>
       </div>
       <div className="mt-10 mb-10 mx-5">
-        <h4 className="text-xl sm:text-3xl font-bold">Hasil Pencarian</h4>
+        <h4 className="text-xl sm:text-3xl font-bold">{t.searchResults}</h4>
         <div className="w-full  border-2 border-gray-300 rounded-lg my-4"></div>
         {isLoading ? (
           <Loading type="card" />
@@ -215,8 +219,8 @@ export default function Dashboard() {
             {vehicles.length === 0 && (
               <div className="col-span-full">
                 <EmptyState
-                  title="Tidak ada kendaraan"
-                  description="Tidak ada kendaraan yang tersedia untuk waktu yang dipilih"
+                  title={t.noVehicles}
+                  description={t.noVehiclesDesc}
                   icon="/window.svg"
                 />
               </div>

@@ -2,7 +2,7 @@
 
 import { Card, Button } from "flowbite-react";
 import { Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
-import { HiUserCircle, HiClock, HiCalendar, HiExclamationCircle, HiUsers, HiCheckCircle, HiMail } from "react-icons/hi";
+import { HiUserCircle, HiClock, HiCalendar, HiExclamationCircle, HiUsers, HiCheckCircle } from "react-icons/hi";
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { VehicleRequest, User , Vehicle} from "@prisma/client";
@@ -10,6 +10,8 @@ import dayjs from "dayjs";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import Loading from "@/components/Loading";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/lib/translations";
 
 interface RequestData extends VehicleRequest {
   user: User;
@@ -36,6 +38,8 @@ interface UserData {
 
 export default function AdminDashboard() {
   const router = useRouter();
+  const { locale } = useLanguage();
+  const t = translations[locale].admin.dashboard;
   const [currentTime, setCurrentTime] = useState("");
   const [currentDate, setCurrentDate] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -48,7 +52,7 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(false);
   const updateDateTime = () => {
     // Update time
-    const time = new Date().toLocaleTimeString('id-ID', {
+    const time = new Date().toLocaleTimeString(locale === 'id' ? 'id-ID' : 'en-GB', {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false
@@ -56,7 +60,7 @@ export default function AdminDashboard() {
     setCurrentTime(time);
 
     // Update date
-    const date = new Date().toLocaleDateString('id-ID', {
+    const date = new Date().toLocaleDateString(locale === 'id' ? 'id-ID' : 'en-GB', {
       weekday: 'long',
       day: 'numeric',
       month: 'long',
@@ -183,7 +187,7 @@ export default function AdminDashboard() {
           </div>
           <div className="flex-1">
             <h5 className="text-xl font-bold tracking-tight text-gray-900">
-              Hi Admin
+              {t.hiAdmin}
             </h5>
             <div className="flex items-center space-x-2 text-sm text-gray-600 mt-1">
               <HiCalendar className="h-4 w-4" />
@@ -191,7 +195,7 @@ export default function AdminDashboard() {
             </div>
             <div className="flex items-center space-x-2 text-sm text-gray-600 mt-1">
               <HiClock className="h-4 w-4" />
-              <span>{currentTime} WIB</span>
+              <span>{currentTime} {t.timezone}</span>
             </div>
           </div>
         </div>
@@ -207,7 +211,7 @@ export default function AdminDashboard() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">
-                  Total Pengguna Aktif
+                  {t.totalActiveUsers}
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
                   {users.filter(user => user.isActive).length}
@@ -223,7 +227,7 @@ export default function AdminDashboard() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">
-                  Total Permintaan
+                  {t.totalRequests}
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
                   {users.reduce((total, user) => total + user._count.vehicleRequests, 0)}
@@ -259,10 +263,10 @@ export default function AdminDashboard() {
             </div>
             <div>
               <h5 className="text-lg font-bold text-orange-800">
-                {overdueRequests.length} Mobil Melewati Batas Waktu Kembali
+                {t.overdueTitle.replace("{n}", String(overdueRequests.length))}
               </h5>
               <p className="text-sm text-orange-600">
-                Terdapat kendaraan yang belum dikembalikan
+                {t.overdueDesc}
               </p>
             </div>
           </div>
@@ -273,7 +277,7 @@ export default function AdminDashboard() {
             className="bg-orange-600 hover:bg-orange-700 text-white font-semibold px-6 py-2 shadow-lg"
             onClick={() => router.push("/admin/requests?isOverdue=true")}
           >
-            Lihat Semua
+            {t.viewAll}
           </Button>
         </div>
       </Card>
@@ -282,20 +286,20 @@ export default function AdminDashboard() {
       <div className="border-b-2 border-gray-300 w-full mb-10"></div>
 
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-gray-900">PENGAJUAN TERBARU</h2>
+        <h2 className="text-2xl font-bold text-gray-900">{t.latestRequests}</h2>
         <Card className="w-full">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left text-gray-500">
               <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3">Nama</th>
-                  <th scope="col" className="px-6 py-3">Kendaraan</th>
-                  <th scope="col" className="px-6 py-3">Plat Nomor</th>
-                  <th scope="col" className="px-6 py-3 max-w-[160px]">Deskripsi</th>
-                  <th scope="col" className="px-6 py-3">Tanggal</th>
-                  <th scope="col" className="px-6 py-3">Waktu</th>
-                  <th scope="col" className="px-6 py-3">Tujuan</th>
-                  <th scope="col" className="px-6 py-3">Action</th>
+                  <th scope="col" className="px-6 py-3">{t.name}</th>
+                  <th scope="col" className="px-6 py-3">{t.vehicle}</th>
+                  <th scope="col" className="px-6 py-3">{t.plateNumber}</th>
+                  <th scope="col" className="px-6 py-3 max-w-[160px]">{t.description}</th>
+                  <th scope="col" className="px-6 py-3">{t.date}</th>
+                  <th scope="col" className="px-6 py-3">{t.time}</th>
+                  <th scope="col" className="px-6 py-3">{t.destination}</th>
+                  <th scope="col" className="px-6 py-3">{t.action}</th>
                 </tr>
               </thead>
               <tbody>
@@ -321,14 +325,14 @@ export default function AdminDashboard() {
                         pill
                         onClick={() => handleActionClick(request)}
                       >
-                        Tindakan
+                        {t.action}
                       </Button>
                     </td>
                   </tr>
                 )) : (
                   <tr>
                     <td colSpan={8} className="text-center">
-                      Tidak ada pengajuan terbaru
+                      {t.noLatestRequests}
                     </td>
                   </tr>
                 )}
@@ -339,18 +343,18 @@ export default function AdminDashboard() {
       </div>
 
       <div className="space-y-4 mt-10">
-        <h2 className="text-2xl font-bold text-gray-900">KENDARAAN KELUAR HARI INI</h2>
+        <h2 className="text-2xl font-bold text-gray-900">{t.vehiclesOutToday}</h2>
         <Card className="w-full">
           <div className="overflow-x-auto">
             <Table striped className="w-full text-sm text-left text-gray-500">
               <TableHead className="text-xs text-gray-700 uppercase bg-gray-50">
                 <TableRow>
-                  <TableHeadCell scope="col" className="px-6 py-3">Nama</TableHeadCell>
-                  <TableHeadCell scope="col" className="px-6 py-3">Kendaraan</TableHeadCell>
-                  <TableHeadCell scope="col" className="px-6 py-3">Plat Nomor</TableHeadCell>
-                  <TableHeadCell scope="col" className="px-6 py-3 max-w-[200px]">Deskripsi</TableHeadCell>
-                  <TableHeadCell scope="col" className="px-6 py-3">Waktu</TableHeadCell>
-                  <TableHeadCell scope="col" className="px-6 py-3">Tujuan</TableHeadCell>
+                  <TableHeadCell scope="col" className="px-6 py-3">{t.name}</TableHeadCell>
+                  <TableHeadCell scope="col" className="px-6 py-3">{t.vehicle}</TableHeadCell>
+                  <TableHeadCell scope="col" className="px-6 py-3">{t.plateNumber}</TableHeadCell>
+                  <TableHeadCell scope="col" className="px-6 py-3 max-w-[200px]">{t.description}</TableHeadCell>
+                  <TableHeadCell scope="col" className="px-6 py-3">{t.time}</TableHeadCell>
+                  <TableHeadCell scope="col" className="px-6 py-3">{t.destination}</TableHeadCell>
                   <TableHeadCell scope="col" className="px-6 py-3"></TableHeadCell>
                 </TableRow>
               </TableHead>
@@ -370,13 +374,13 @@ export default function AdminDashboard() {
                     <TableCell className="px-6 py-4">{dayjs(request.startDateTime).format("HH:mm")} - {dayjs(request.endDateTime).format("HH:mm")}</TableCell>
                     <TableCell className="px-6 py-4 w-sm">{request.destination}</TableCell>
                     <TableCell className="px-6 py-4 min-w-40">
-                     <Image src={request.vehicle.image || "/default-car.png"} alt="Kendaraan" width={200} height={100} />
+                     <Image src={request.vehicle.image || "/default-car.png"} alt={t.vehicleAlt} width={200} height={100} />
                     </TableCell>
                   </TableRow>
                 )) : (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center">
-                      Tidak ada kendaraan keluar hari ini
+                      {t.noVehiclesOutToday}
                     </TableCell>
                   </TableRow>
                 )}

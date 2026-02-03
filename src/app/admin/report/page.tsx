@@ -3,8 +3,12 @@
 import { useState } from "react";
 import { Card, Button, Alert, Spinner } from "flowbite-react";
 import { HiChartBar, HiDownload, HiCalendar } from "react-icons/hi";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/lib/translations";
 
 export default function AdminReport() {
+  const { locale } = useLanguage();
+  const t = translations[locale].admin.report;
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [isExporting, setIsExporting] = useState(false);
@@ -55,14 +59,14 @@ export default function AdminReport() {
       
       setMessage({
         type: 'success',
-        text: 'Laporan berhasil diexport!'
+        text: t.exportSuccess
       });
 
     } catch (error) {
       console.error('Export error:', error);
       setMessage({
         type: 'error',
-        text: 'Gagal mengexport data. Silakan coba lagi.'
+        text: t.exportError
       });
     } finally {
       setIsExporting(false);
@@ -79,18 +83,17 @@ export default function AdminReport() {
     <div className="p-6 space-y-6">
       <div className="flex items-center space-x-4">
         <HiChartBar className="h-8 w-8 text-blue-600" />
-        <h1 className="text-3xl font-bold text-gray-900">Laporan Data</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t.title}</h1>
       </div>
       
       <Card className="w-full">
         <div className="space-y-6">
           <div>
             <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              Export Data Pengajuan Kendaraan
+              {t.exportTitle}
             </h2>
             <p className="text-gray-600 mb-6">
-              Download laporan data pengajuan kendaraan dalam format Excel. 
-              Anda dapat memfilter berdasarkan rentang tanggal atau export semua data.
+              {t.exportDesc}
             </p>
           </div>
 
@@ -98,13 +101,13 @@ export default function AdminReport() {
           <div className="border-t pt-6">
             <h3 className="text-lg font-medium text-gray-700 mb-4 flex items-center">
               <HiCalendar className="h-5 w-5 mr-2" />
-              Filter Rentang Tanggal
+              {t.filterDateRange}
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-2">
-                  Tanggal Mulai
+                  {t.startDate}
                 </label>
                 <input
                   type="date"
@@ -117,7 +120,7 @@ export default function AdminReport() {
               
               <div>
                 <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-2">
-                  Tanggal Akhir
+                  {t.endDate}
                 </label>
                 <input
                   type="date"
@@ -136,7 +139,7 @@ export default function AdminReport() {
                 color="light"
                 size="sm"
               >
-                Reset Filter
+                {t.resetFilter}
               </Button>
             </div>
           </div>
@@ -146,12 +149,12 @@ export default function AdminReport() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-medium text-gray-700">
-                  Export ke Excel
+                  {t.exportToExcel}
                 </h3>
                 <p className="text-sm text-gray-500 mt-1">
                   {startDate || endDate 
-                    ? `Export data dari ${startDate || 'awal'} sampai ${endDate || 'sekarang'}`
-                    : 'Export semua data pengajuan kendaraan'
+                    ? t.exportRange.replace("{start}", startDate || t.rangeStartPlaceholder).replace("{end}", endDate || t.rangeEndPlaceholder)
+                    : t.exportAll
                   }
                 </p>
               </div>
@@ -167,7 +170,7 @@ export default function AdminReport() {
                 ) : (
                   <HiDownload className="h-4 w-4 mr-2" />
                 )}
-                {isExporting ? 'Mengexport...' : 'Export Excel'}
+                {isExporting ? t.exporting : t.exportButton}
               </Button>
             </div>
           </div>
@@ -189,13 +192,13 @@ export default function AdminReport() {
         <div className="text-center py-8">
           <HiChartBar className="mx-auto h-12 w-12 text-gray-400 mb-4" />
           <h3 className="text-lg font-medium text-gray-700 mb-2">
-            Data yang Akan Diexport
+            {t.dataToExport}
           </h3>
           <div className="text-sm text-gray-500 space-y-1">
-            <p>• Data pengajuan kendaraan (ID, Pemohon, Kendaraan)</p>
-            <p>• Detail waktu (Tanggal mulai, Tanggal selesai, Dibuat)</p>
-            <p>• Status pengajuan (Pending, Approved, Rejected, dll)</p>
-            <p>• Tujuan perjalanan dan informasi approval</p>
+            <p>• {t.dataBullet1}</p>
+            <p>• {t.dataBullet2}</p>
+            <p>• {t.dataBullet3}</p>
+            <p>• {t.dataBullet4}</p>
           </div>
         </div>
       </Card>
